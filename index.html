@@ -18,7 +18,6 @@
       box-sizing: border-box;
     }
 
-    /* Mobile Responsive Card */
     .card {
       background-color: #f9faf8;
       width: 100%;
@@ -43,7 +42,6 @@
       margin-bottom: 20px;
     }
 
-    /* Role Selection Options (Guest / Student) */
     .role-box {
       display: flex;
       background-color: #d9e3d9;
@@ -70,7 +68,6 @@
       color: white;
     }
 
-    /* Input Fields */
     input {
       width: 100%;
       padding: 14px;
@@ -83,7 +80,6 @@
       font-size: 14px;
     }
 
-    /* Submit Button */
     .submit-btn {
       width: 100%;
       padding: 14px;
@@ -102,7 +98,6 @@
       background-color: #4e6950;
     }
 
-    /* Footer Text */
     .footer {
       margin-top: 15px;
       font-size: 13px;
@@ -124,20 +119,16 @@
     <h2>Online Kanjipura</h2>
     <p id="subTitle">Take the first step</p>
 
-    <!-- Role Selection Options -->
     <div class="role-box">
       <button class="role-btn" id="guestBtn" onclick="setRole('guest')">Guest</button>
       <button class="role-btn active" id="studentBtn" onclick="setRole('student')">Student</button>
     </div>
 
-    <!-- Form -->
     <form onsubmit="event.preventDefault();">
-      <!-- Guest Input (Only Name) -->
       <div id="guestInputs" style="display: none;">
         <input type="text" placeholder="Enter your name" required>
       </div>
 
-      <!-- Student Inputs -->
       <div id="studentInputs">
         <input type="email" placeholder="E-mail" required>
         <input type="text" placeholder="Username" required>
@@ -167,24 +158,20 @@
         guestBtn.className = 'role-btn active';
         studentBtn.className = 'role-btn';
 
-        /* Show only name input for Guest */
         guestInputs.style.display = 'block';
         studentInputs.style.display = 'none';
         footerBox.style.display = 'none';
 
-        /* Button text */
         submitBtn.textContent = 'Enter Website';
         subTitle.textContent = 'Explore as Guest';
       } else {
         studentBtn.className = 'role-btn active';
         guestBtn.className = 'role-btn';
 
-        /* Show student inputs */
         guestInputs.style.display = 'none';
         studentInputs.style.display = 'block';
         footerBox.style.display = 'block';
 
-        /* Button text */
         submitBtn.textContent = 'Sign up';
         subTitle.textContent = 'Take the first step';
       }
