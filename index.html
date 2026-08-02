@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Kanjipura</title>
+  <style>
+    body {
+      background-color: #cfdacf;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 15px;
+      box-sizing: border-box;
+    }
+
+    /* Mobile Responsive Card */
+    .card {
+      background-color: #f9faf8;
+      width: 100%;
+      max-width: 360px;
+      padding: 30px 24px;
+      border-radius: 25px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      box-sizing: border-box;
+    }
+
+    h2 {
+      margin-bottom: 5px;
+      color: #1f2b1f;
+      font-size: 22px;
+    }
+
+    p {
+      color: #5e6b5e;
+      font-size: 14px;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    /* Role Selection Options (Guest / Student) */
+    .role-box {
+      display: flex;
+      background-color: #d9e3d9;
+      border-radius: 20px;
+      padding: 4px;
+      margin-bottom: 20px;
+    }
+
+    .role-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 16px;
+      background: transparent;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      color: #5e6b5e;
+      transition: 0.2s;
+    }
+
+    .role-btn.active {
+      background-color: #5b795d;
+      color: white;
+    }
+
+    /* Input Fields */
+    input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 12px;
+      border: none;
+      background-color: #d9e3d9;
+      border-radius: 20px;
+      box-sizing: border-box;
+      outline: none;
+      font-size: 14px;
+    }
+
+    /* Submit Button */
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background-color: #5b795d;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 5px;
+      transition: 0.2s;
+    }
+
+    .submit-btn:hover {
+      background-color: #4e6950;
+    }
+
+    /* Footer Text */
+    .footer {
+      margin-top: 15px;
+      font-size: 13px;
+      color: #5e6b5e;
+    }
+
+    .footer a {
+      color: #1f2b1f;
+      font-weight: bold;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <h2>Online Kanjipura</h2>
+    <p id="subTitle">Take the first step</p>
+
+    <!-- Role Selection Options -->
+    <div class="role-box">
+      <button class="role-btn" id="guestBtn" onclick="setRole('guest')">Guest</button>
+      <button class="role-btn active" id="studentBtn" onclick="setRole('student')">Student</button>
+    </div>
+
+    <!-- Form -->
+    <form onsubmit="event.preventDefault();">
+      <!-- Guest Input (Only Name) -->
+      <div id="guestInputs" style="display: none;">
+        <input type="text" placeholder="Enter your name" required>
+      </div>
+
+      <!-- Student Inputs -->
+      <div id="studentInputs">
+        <input type="email" placeholder="E-mail" required>
+        <input type="text" placeholder="Username" required>
+        <input type="password" placeholder="Password" required>
+        <input type="password" placeholder="Confirm password" required>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">Sign up</button>
+    </form>
+
+    <div class="footer" id="footerBox">
+      Already have an account? <a onclick="alert('Switching form...')">Sign in</a>
+    </div>
+  </div>
+
+  <script>
+    function setRole(role) {
+      const guestInputs = document.getElementById('guestInputs');
+      const studentInputs = document.getElementById('studentInputs');
+      const submitBtn = document.getElementById('submitBtn');
+      const guestBtn = document.getElementById('guestBtn');
+      const studentBtn = document.getElementById('studentBtn');
+      const footerBox = document.getElementById('footerBox');
+      const subTitle = document.getElementById('subTitle');
+
+      if (role === 'guest') {
+        guestBtn.className = 'role-btn active';
+        studentBtn.className = 'role-btn';
+
+        /* Show only name input for Guest */
+        guestInputs.style.display = 'block';
+        studentInputs.style.display = 'none';
+        footerBox.style.display = 'none';
+
+        /* Button text */
+        submitBtn.textContent = 'Enter Website';
+        subTitle.textContent = 'Explore as Guest';
+      } else {
+        studentBtn.className = 'role-btn active';
+        guestBtn.className = 'role-btn';
+
+        /* Show student inputs */
+        guestInputs.style.display = 'none';
+        studentInputs.style.display = 'block';
+        footerBox.style.display = 'block';
+
+        /* Button text */
+        submitBtn.textContent = 'Sign up';
+        subTitle.textContent = 'Take the first step';
+      }
+    }
+  </script>
+
+</body>
+
+</html>
