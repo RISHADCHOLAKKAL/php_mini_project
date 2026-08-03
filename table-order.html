@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Canteen | Table Order</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .table-badge {
+      background-color: var(--primary-pill);
+      color: var(--white);
+      font-size: 13px;
+      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 12px;
+      display: inline-block;
+      margin-top: 4px;
+    }
+
+    .order-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .order-card {
+      background-color: var(--item-bg);
+      border: 1px solid #0e630e;
+      border-radius: 20px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .order-card.sold-out {
+      background-color: #fce8e6;
+      border-color: #e57373;
+      opacity: 0.7;
+    }
+
+    .item-info {
+      flex: 1;
+    }
+
+    .item-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 2px;
+    }
+
+    .item-price {
+      font-size: 14px;
+      font-weight: 700;
+      color: #384d39;
+    }
+
+    .qty-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .qty-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      border: none;
+      background-color: var(--primary-pill);
+      color: var(--white);
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qty-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .qty-val {
+      font-size: 15px;
+      font-weight: bold;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    .order-footer {
+      margin-top: 14px;
+      padding: 14px 18px;
+      background-color: var(--white);
+      border-radius: 18px;
+      border: 1px solid #d9e3d9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .place-order-btn {
+      background-color: var(--primary-pill);
+      color: var(--white);
+      border: none;
+      border-radius: 14px;
+      padding: 10px 20px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card card-full">
+    <div class="header">
+      <button class="back-btn" onclick="window.location.href='home.html'" title="Back">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+        </svg>
+      </button>
+      <h2>Table Order</h2>
+      <div class="table-badge" id="tableBadge">Table 1</div>
+    </div>
+
+    <!-- Items Dynamic List -->
+    <div class="order-list" id="orderList"></div>
+
+    <!-- Footer Checkout Division -->
+    <div class="order-footer">
+      <div>
+        <div style="font-size: 12px; color: #6b7a6b; font-weight: bold;" id="itemCount">0 Items</div>
+        <div style="font-size: 18px; font-weight: 800; color: var(--text-dark);" id="totalPrice">Total: ₹0</div>
+      </div>
+      <button class="place-order-btn" onclick="placeOrder()">Confirm Order</button>
+    </div>
+  </div>
+
+  <script src="store.js"></script>
+  <script>
+    // Extract table parameter from URL (e.g. table-order.html?table=3)
+    const urlParams = new URLSearchParams(window.location.search);
+    const tableNum = urlParams.get('table') || '1';
+    document.getElementById('tableBadge').textContent = `Table ${tableNum}`;
+
+    const userCart = {};
+
+    function renderOrderItems() {
+      const items = getMenuItems();
+      const container = document.getElementById('orderList');
+      container.innerHTML = '';
+
+      items.forEach(item => {
+        if (!(item.id in userCart)) userCart[item.id] = 0;
+
+        const isSoldOut = !item.isAvailable || item.qty <= 0;
+        const card = document.createElement('div');
+        card.className = `order-card ${isSoldOut ? 'sold-out' : ''}`;
+
+        card.innerHTML = `
+          <div class="item-info">
+            <div class="item-title">${item.name}</div>
+            <div class="item-price" style="${isSoldOut ? 'color: #c62828;' : ''}">${isSoldOut ? 'Sold Out' : '₹' + item.price}</div>
+          </div>
+          <div class="qty-controls">
+            ${isSoldOut ? `<button class="qty-btn" disabled>+</button>` : `
+              <button class="qty-btn" onclick="updateQty(${item.id}, -1, ${item.price})">-</button>
+              <span class="qty-val" id="qty-${item.id}">${userCart[item.id]}</span>
+              <button class="qty-btn" onclick="updateQty(${item.id}, 1, ${item.price}, ${item.qty})">+</button>
+            `}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      calculateTotal();
+    }
+
+    function updateQty(id, delta, price, maxQty) {
+      if (delta > 0 && userCart[id] >= maxQty) {
+        alert('Cannot select more than available stock quantity!');
+        return;
+      }
+      userCart[id] = Math.max(0, userCart[id] + delta);
+      document.getElementById(`qty-${id}`).textContent = userCart[id];
+      calculateTotal();
+    }
+
+    function calculateTotal() {
+      const items = getMenuItems();
+      let count = 0;
+      let total = 0;
+
+      items.forEach(item => {
+        const qty = userCart[item.id] || 0;
+        count += qty;
+        total += qty * item.price;
+      });
+
+      document.getElementById('itemCount').textContent = count + ' Items';
+      document.getElementById('totalPrice').textContent = 'Total: ₹' + total;
+    }
+
+    function placeOrder() {
+      const items = getMenuItems();
+      let count = 0;
+      for (const id in userCart) count += userCart[id];
+
+      if (count === 0) {
+        alert('Please select at least 1 item to place order.');
+        return;
+      }
+
+      // Deduct stock in store.js
+      items.forEach(item => {
+        if (userCart[item.id] > 0) {
+          item.qty = Math.max(0, item.qty - userCart[item.id]);
+          if (item.qty === 0) item.isAvailable = false;
+        }
+      });
+      saveMenuItems(items);
+
+      alert(`Order placed successfully for Table ${tableNum}!`);
+      window.location.href = 'home.html';
+    }
+
+    renderOrderItems();
+  </script>
+
+</body>
+
+</html>

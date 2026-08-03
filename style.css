@@ -1,0 +1,190 @@
+/* Global Color Variables & Design Tokens */
+:root {
+  --bg: #cfdacf;
+  --card-bg: #f9faf8;
+  --primary-pill: #5b795d;
+  --pill-hover: #4e6950;
+  --accent-pill: #8fa791;
+  --item-bg: #bcd0be;
+  --item-hover: #a8bca9;
+  --text-dark: #1f2b1f;
+  --text-muted: #5e6b5e;
+  --white: #ffffff;
+  --shadow: rgba(31, 43, 31, 0.1);
+  --available: #2e7d32;
+  --unavailable: #c62828;
+}
+
+/* Reset & Fonts */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Page Body Layout */
+body {
+  background: radial-gradient(circle at 50% 30%, #eef3ee 0%, #cfdacf 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+/* Common Card Containers */
+.card {
+  background-color: var(--card-bg);
+  width: 100%;
+  border-radius: 24px;
+  box-shadow: 0 15px 35px var(--shadow);
+  box-sizing: border-box;
+}
+
+/* Card Fullscreen Mode */
+.card-full {
+  max-width: 100%;
+  height: 100%;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card Compact Centered Mode (Login / Home) */
+.card-compact {
+  max-width: 380px;
+  padding: 30px 24px;
+  text-align: center;
+}
+
+/* Header Titles & Subtitles */
+.header {
+  margin-bottom: 20px;
+  text-align: center;
+  position: relative;
+}
+
+.header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.header p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Back Button */
+.back-btn {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+}
+
+/* Common Form Inputs */
+input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 12px;
+  border: none;
+  background-color: #d9e3d9;
+  border-radius: 20px;
+  box-sizing: border-box;
+  outline: none;
+  font-size: 14px;
+}
+
+/* Primary Submit / Full Width Pill Buttons */
+.btn-primary, .submit-btn, .btn-full {
+  width: 100%;
+  padding: 14px;
+  background-color: var(--primary-pill);
+  color: var(--white);
+  border: none;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(91, 121, 93, 0.25);
+}
+
+.btn-secondary, .btn-full.secondary {
+  background-color: var(--accent-pill);
+  box-shadow: 0 4px 12px rgba(143, 167, 145, 0.25);
+}
+
+/* Status Badges */
+.status-badge {
+  font-size: 11px;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-badge.available {
+  background-color: #e8f5e9;
+  color: var(--available);
+}
+
+.status-badge.unavailable {
+  background-color: #ffebee;
+  color: var(--unavailable);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-badge.available .status-dot {
+  background-color: var(--available);
+}
+
+.status-badge.unavailable .status-dot {
+  background-color: var(--unavailable);
+}
+
+/* Quantity Curved Square Badge */
+.qty-box {
+  background-color: var(--card-bg);
+  color: var(--text-dark);
+  border: 1px solid var(--primary-pill);
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.qty-box.zero {
+  border-color: var(--unavailable);
+  color: var(--unavailable);
+  background-color: #ffebee;
+}
