@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Canteen | Testing Portal & Directory</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .page-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+      width: 100%;
+    }
+
+    .page-link-btn {
+      width: 100%;
+      padding: 14px 18px;
+      border: 1px solid #0e630e;
+      border-radius: 18px;
+      background-color: var(--item-bg);
+      color: var(--text-dark);
+      font-size: 15px;
+      font-weight: bold;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+      transition: all 0.25s ease;
+    }
+
+    .page-link-btn:hover {
+      background-color: var(--primary-pill);
+      color: var(--white);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(91, 121, 93, 0.3);
+    }
+
+    .badge-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      background-color: var(--card-bg);
+      color: var(--text-dark);
+    }
+
+    .page-link-btn:hover .badge-tag {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: var(--white);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <div class="header">
+      <h2>E-Canteen Test Hub</h2>
+      <p>Testing Directory for GitHub Pages</p>
+    </div>
+
+    <div class="page-list">
+      <a href="index.html" class="page-link-btn">
+        <span>🔐 Login / Sign Up Page</span>
+        <span class="badge-tag">index.html</span>
+      </a>
+
+      <a href="home.html" class="page-link-btn">
+        <span>🏠 User Home Screen</span>
+        <span class="badge-tag">home.html</span>
+      </a>
+
+      <a href="menu.html" class="page-link-btn">
+        <span>🥗 Available Items Menu</span>
+        <span class="badge-tag">menu.html</span>
+      </a>
+
+      <a href="open-order.html" class="page-link-btn">
+        <span>🛒 Open Order Checkout</span>
+        <span class="badge-tag">open-order.html</span>
+      </a>
+
+      <a href="admin-home.html" class="page-link-btn">
+        <span>🛠️ Admin Dashboard</span>
+        <span class="badge-tag">admin-home.html</span>
+      </a>
+
+      <a href="staff.html" class="page-link-btn">
+        <span>📦 Staff Stock Manager</span>
+        <span class="badge-tag">staff.html</span>
+      </a>
+
+      <a href="sales-report.html" class="page-link-btn">
+        <span>📊 Admin Sales Report</span>
+        <span class="badge-tag">sales-report.html</span>
+      </a>
+    </div>
+  </div>
+
+</body>
+
+</html>
