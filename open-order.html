@@ -156,9 +156,9 @@
           </div>
           <div class="qty-controls">
             ${isSoldOut ? `<button class="qty-btn" disabled>+</button>` : `
-              <button class="qty-btn" onclick="updateQty(${item.id}, -1, ${item.price})">-</button>
+              <button class="qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
               <span class="qty-val" id="qty-${item.id}">${userCart[item.id]}</span>
-              <button class="qty-btn" onclick="updateQty(${item.id}, 1, ${item.price}, ${item.qty})">+</button>
+              <button class="qty-btn" onclick="updateQty(${item.id}, 1, ${item.qty})">+</button>
             `}
           </div>
         `;
@@ -167,7 +167,7 @@
       calculateTotal();
     }
 
-    function updateQty(id, delta, price, maxQty) {
+    function updateQty(id, delta, maxQty) {
       if (delta > 0 && userCart[id] >= maxQty) {
         alert('Cannot select more than available stock quantity!');
         return;
@@ -190,6 +190,7 @@
 
       document.getElementById('itemCount').textContent = count + ' Items';
       document.getElementById('totalPrice').textContent = 'Total: ₹' + total;
+      return total;
     }
 
     function placeOrder() {
@@ -202,14 +203,17 @@
         return;
       }
 
-      // Deduct purchased quantities from store
+      // Save sale order history
+      const orderItems = [];
       items.forEach(item => {
         if (userCart[item.id] > 0) {
+          orderItems.push({ name: item.name, qty: userCart[item.id], price: item.price });
           item.qty = Math.max(0, item.qty - userCart[item.id]);
           if (item.qty === 0) item.isAvailable = false;
         }
       });
       saveMenuItems(items);
+      recordSale("Open Order", null, orderItems, calculateTotal());
 
       alert('Order Placed Successfully!');
       window.location.href = 'home.html';

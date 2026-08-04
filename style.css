@@ -31,7 +31,7 @@ body {
   align-items: center;
   min-height: 100vh;
   margin: 0;
-  padding: 12px;
+  padding: 16px;
   box-sizing: border-box;
 }
 
@@ -39,9 +39,12 @@ body {
 .card {
   background-color: var(--card-bg);
   width: 100%;
-  border-radius: 24px;
+  max-width: 380px;
+  padding: 28px 22px;
+  border-radius: 30px;
   box-shadow: 0 15px 35px var(--shadow);
   box-sizing: border-box;
+  text-align: center;
 }
 
 /* Card Fullscreen Mode */
@@ -51,13 +54,7 @@ body {
   padding: 24px 20px;
   display: flex;
   flex-direction: column;
-}
-
-/* Card Compact Centered Mode (Login / Home) */
-.card-compact {
-  max-width: 380px;
-  padding: 30px 24px;
-  text-align: center;
+  text-align: left;
 }
 
 /* Header Titles & Subtitles */
@@ -109,26 +106,37 @@ input {
 }
 
 /* Primary Submit / Full Width Pill Buttons */
-.btn-primary, .submit-btn, .btn-full {
+.btn-full {
   width: 100%;
-  padding: 14px;
-  background-color: var(--primary-pill);
-  color: var(--white);
+  padding: 16px;
   border: none;
-  border-radius: 20px;
+  border-radius: 22px;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 700;
   cursor: pointer;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
+  color: var(--white);
+  background-color: var(--primary-pill);
   box-shadow: 0 4px 12px rgba(91, 121, 93, 0.25);
+  transition: all 0.25s ease;
 }
 
-.btn-secondary, .btn-full.secondary {
+.btn-full.secondary {
   background-color: var(--accent-pill);
   box-shadow: 0 4px 12px rgba(143, 167, 145, 0.25);
+}
+
+.btn-full:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(91, 121, 93, 0.35);
+}
+
+.btn-full:active {
+  transform: translateY(0);
 }
 
 /* Status Badges */

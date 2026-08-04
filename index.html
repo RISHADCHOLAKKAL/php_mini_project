@@ -7,42 +7,6 @@
   <title>Online Kanjipura</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    body {
-      background-color: #cfdacf;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 15px;
-      box-sizing: border-box;
-    }
-
-    .card {
-      background-color: #f9faf8;
-      width: 100%;
-      max-width: 360px;
-      padding: 30px 24px;
-      border-radius: 25px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      box-sizing: border-box;
-    }
-
-    h2 {
-      margin-bottom: 5px;
-      color: #1f2b1f;
-      font-size: 22px;
-    }
-
-    p {
-      color: #5e6b5e;
-      font-size: 14px;
-      margin-top: 0;
-      margin-bottom: 20px;
-    }
-
     .role-box {
       display: flex;
       background-color: #d9e3d9;
@@ -60,53 +24,23 @@
       cursor: pointer;
       font-weight: bold;
       font-size: 14px;
-      color: #5e6b5e;
+      color: var(--text-muted);
       transition: 0.2s;
     }
 
     .role-btn.active {
-      background-color: #5b795d;
-      color: white;
-    }
-
-    input {
-      width: 100%;
-      padding: 14px;
-      margin-bottom: 12px;
-      border: none;
-      background-color: #d9e3d9;
-      border-radius: 20px;
-      box-sizing: border-box;
-      outline: none;
-      font-size: 14px;
-    }
-
-    .submit-btn {
-      width: 100%;
-      padding: 14px;
-      background-color: #5b795d;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 5px;
-      transition: 0.2s;
-    }
-
-    .submit-btn:hover {
-      background-color: #4e6950;
+      background-color: var(--primary-pill);
+      color: var(--white);
     }
 
     .footer {
       margin-top: 15px;
       font-size: 13px;
-      color: #5e6b5e;
+      color: var(--text-muted);
     }
 
     .footer a {
-      color: #1f2b1f;
+      color: var(--text-dark);
       font-weight: bold;
       text-decoration: underline;
       cursor: pointer;
@@ -123,9 +57,10 @@
     <div class="role-box">
       <button class="role-btn" id="guestBtn" onclick="setRole('guest')">Guest</button>
       <button class="role-btn active" id="studentBtn" onclick="setRole('student')">Student</button>
+      <button class="role-btn" id="adminBtn" onclick="setRole('admin')">Admin</button>
     </div>
 
-    <form onsubmit="event.preventDefault(); window.location.href='home.html';">
+    <form onsubmit="event.preventDefault(); handleAuthSubmit();">
       <div id="guestInputs" style="display: none;">
         <input type="text" id="guestNameInput" placeholder="Enter your name">
       </div>
@@ -146,7 +81,10 @@
   </div>
 
   <script>
+    let currentRole = 'student';
+
     function setRole(role) {
+      currentRole = role;
       const guestInputs = document.getElementById('guestInputs');
       const studentInputs = document.getElementById('studentInputs');
       const guestNameInput = document.getElementById('guestNameInput');
@@ -154,13 +92,15 @@
       const submitBtn = document.getElementById('submitBtn');
       const guestBtn = document.getElementById('guestBtn');
       const studentBtn = document.getElementById('studentBtn');
+      const adminBtn = document.getElementById('adminBtn');
       const footerBox = document.getElementById('footerBox');
       const subTitle = document.getElementById('subTitle');
 
-      if (role === 'guest') {
-        guestBtn.className = 'role-btn active';
-        studentBtn.className = 'role-btn';
+      guestBtn.className = 'role-btn' + (role === 'guest' ? ' active' : '');
+      studentBtn.className = 'role-btn' + (role === 'student' ? ' active' : '');
+      adminBtn.className = 'role-btn' + (role === 'admin' ? ' active' : '');
 
+      if (role === 'guest') {
         guestInputs.style.display = 'block';
         studentInputs.style.display = 'none';
         footerBox.style.display = 'none';
@@ -170,10 +110,17 @@
 
         submitBtn.textContent = 'Enter Website';
         subTitle.textContent = 'Explore as Guest';
-      } else {
-        studentBtn.className = 'role-btn active';
-        guestBtn.className = 'role-btn';
+      } else if (role === 'admin') {
+        guestInputs.style.display = 'none';
+        studentInputs.style.display = 'block';
+        footerBox.style.display = 'none';
 
+        guestNameInput.required = false;
+        studentFields.forEach(field => field.required = true);
+
+        submitBtn.textContent = 'Admin Sign In';
+        subTitle.textContent = 'Admin Portal Access';
+      } else {
         guestInputs.style.display = 'none';
         studentInputs.style.display = 'block';
         footerBox.style.display = 'block';
@@ -183,6 +130,14 @@
 
         submitBtn.textContent = 'Sign up';
         subTitle.textContent = 'Take the first step';
+      }
+    }
+
+    function handleAuthSubmit() {
+      if (currentRole === 'admin') {
+        window.location.href = 'admin-home.html';
+      } else {
+        window.location.href = 'home.html';
       }
     }
   </script>

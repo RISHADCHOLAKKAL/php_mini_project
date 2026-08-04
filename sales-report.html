@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Canteen | Admin Sales Report</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Metric summary cards grid */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .summary-card {
+      background-color: var(--item-bg);
+      border: 1px solid #0e630e;
+      border-radius: 18px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+    }
+
+    .summary-card .label {
+      font-size: 12px;
+      color: #384d39;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .summary-card .val {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-dark);
+    }
+
+    /* Filter bar chips */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .filter-chip {
+      background-color: #d9e3d9;
+      color: var(--text-dark);
+      border: none;
+      padding: 8px 14px;
+      border-radius: 18px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .filter-chip.active {
+      background-color: var(--primary-pill);
+      color: var(--white);
+    }
+
+    /* Sales report items list */
+    .sales-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .sales-card {
+      background-color: var(--item-bg);
+      border: 1px solid #0e630e;
+      border-radius: 20px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+    }
+
+    .sales-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sales-id {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-dark);
+    }
+
+    .sales-type {
+      background-color: var(--primary-pill);
+      color: var(--white);
+      font-size: 11px;
+      font-weight: bold;
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+
+    .sales-details {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #384d39;
+      font-weight: 600;
+      border-top: 1px dashed #9cb19e;
+      padding-top: 6px;
+    }
+
+    .order-items-summary {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card card-full">
+    <div class="header">
+      <button class="back-btn" onclick="window.location.href='admin-home.html'" title="Back to Admin Home">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+        </svg>
+      </button>
+      <h2>Admin Sales Report</h2>
+      <p>Overview of revenue & order history</p>
+    </div>
+
+    <!-- Key Metrics Grid -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <span class="label">Total Revenue</span>
+        <span class="val" id="totalRevenue">₹0</span>
+      </div>
+      <div class="summary-card">
+        <span class="label">Total Orders</span>
+        <span class="val" id="totalOrders">0</span>
+      </div>
+    </div>
+
+    <!-- Filter chips -->
+    <div class="filter-bar">
+      <button class="filter-chip active" onclick="filterSales('all', this)">All Orders</button>
+      <button class="filter-chip" onclick="filterSales('tables', this)">Tables</button>
+      <button class="filter-chip" onclick="filterSales('open', this)">Open Orders</button>
+    </div>
+
+    <!-- Sales Order History List -->
+    <div class="sales-list" id="salesList"></div>
+  </div>
+
+  <script src="store.js"></script>
+  <script>
+    let currentFilter = 'all';
+
+    function renderSalesReport() {
+      const sales = getSalesHistory();
+      const listContainer = document.getElementById('salesList');
+      listContainer.innerHTML = '';
+
+      let revenueSum = 0;
+      let orderCount = 0;
+
+      const filteredSales = sales.filter(order => {
+        if (currentFilter === 'tables') return order.table !== null;
+        if (currentFilter === 'open') return order.table === null;
+        return true;
+      });
+
+      sales.forEach(order => {
+        revenueSum += order.total;
+        orderCount++;
+      });
+
+      document.getElementById('totalRevenue').textContent = '₹' + revenueSum;
+      document.getElementById('totalOrders').textContent = orderCount;
+
+      if (filteredSales.length === 0) {
+        listContainer.innerHTML = `<div class="empty-state">No orders found for this filter.</div>`;
+        return;
+      }
+
+      filteredSales.forEach(order => {
+        const card = document.createElement('div');
+        card.className = 'sales-card';
+
+        const dateObj = new Date(order.date);
+        const timeFormatted = isNaN(dateObj.getTime()) ? order.date : dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        const itemsString = order.items.map(item => `${item.name} x${item.qty}`).join(', ');
+
+        card.innerHTML = `
+          <div class="sales-header">
+            <span class="sales-id">${order.id}</span>
+            <span class="sales-type">${order.type}</span>
+          </div>
+          <div class="order-items-summary">${itemsString}</div>
+          <div class="sales-details">
+            <span>Time: ${timeFormatted}</span>
+            <span style="font-weight: 800; font-size: 15px; color: var(--text-dark);">Total: ₹${order.total}</span>
+          </div>
+        `;
+        listContainer.appendChild(card);
+      });
+    }
+
+    function filterSales(type, element) {
+      currentFilter = type;
+      document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+      element.classList.add('active');
+      renderSalesReport();
+    }
+
+    renderSalesReport();
+  </script>
+
+</body>
+
+</html>

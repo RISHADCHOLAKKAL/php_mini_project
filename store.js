@@ -8,6 +8,16 @@ const DEFAULT_MENU_ITEMS = [
   { id: 6, name: "Samosa", desc: "Spiced potato filling", price: 20, category: "snacks", qty: 12, isAvailable: true, icon: "M12 2l-5.5 9h11zM12 22l5.5-9h-11z" }
 ];
 
+// Sample Sales History Data (for Sales Report)
+const DEFAULT_SALES_HISTORY = [
+  { id: "ORD-101", date: "2026-08-04T10:15:00", type: "Table 1", table: 1, total: 120, items: [{ name: "Traditional Kanji", qty: 2, price: 40 }, { name: "Special Masala Tea", qty: 2, price: 15 }] },
+  { id: "ORD-102", date: "2026-08-04T11:30:00", type: "Open Order", table: null, total: 160, items: [{ name: "Special Meal Thali", qty: 2, price: 80 }] },
+  { id: "ORD-103", date: "2026-08-04T12:10:00", type: "Table 3", table: 3, total: 95, items: [{ name: "Special Meal Thali", qty: 1, price: 80 }, { name: "Special Masala Tea", qty: 1, price: 15 }] },
+  { id: "ORD-104", date: "2026-08-04T13:45:00", type: "Table 2", table: 2, total: 200, items: [{ name: "Traditional Kanji", qty: 2, price: 40 }, { name: "Special Meal Thali", qty: 1, price: 80 }, { name: "Fresh Lime Juice", qty: 1, price: 25 }, { name: "Special Masala Tea", qty: 1, price: 15 }] },
+  { id: "ORD-105", date: "2026-08-04T15:20:00", type: "Open Order", table: null, total: 40, items: [{ name: "Pazham Pori", qty: 2, price: 20 }] },
+  { id: "ORD-106", date: "2026-08-04T17:00:00", type: "Table 5", table: 5, total: 110, items: [{ name: "Special Meal Thali", qty: 1, price: 80 }, { name: "Fresh Lime Juice", qty: 1, price: 25 }, { name: "Samosa", qty: 1, price: 20 }] }
+];
+
 // Function to get menu items from localStorage
 function getMenuItems() {
   const stored = localStorage.getItem('ecanteen_menu');
@@ -21,4 +31,29 @@ function getMenuItems() {
 // Function to save menu items to localStorage
 function saveMenuItems(items) {
   localStorage.setItem('ecanteen_menu', JSON.stringify(items));
+}
+
+// Function to get sales report data from localStorage
+function getSalesHistory() {
+  const stored = localStorage.getItem('ecanteen_sales');
+  if (!stored) {
+    localStorage.setItem('ecanteen_sales', JSON.stringify(DEFAULT_SALES_HISTORY));
+    return DEFAULT_SALES_HISTORY;
+  }
+  return JSON.parse(stored);
+}
+
+// Function to record a new sale
+function recordSale(orderType, tableNum, itemsList, totalAmount) {
+  const sales = getSalesHistory();
+  const newOrder = {
+    id: 'ORD-' + (100 + sales.length + 1),
+    date: new Date().toISOString(),
+    type: orderType,
+    table: tableNum,
+    total: totalAmount,
+    items: itemsList
+  };
+  sales.unshift(newOrder);
+  localStorage.setItem('ecanteen_sales', JSON.stringify(sales));
 }
