@@ -106,7 +106,7 @@ input {
 }
 
 /* Primary Submit / Full Width Pill Buttons */
-.btn-full {
+.btn-full, .submit-btn {
   width: 100%;
   padding: 16px;
   border: none;
@@ -114,6 +114,7 @@ input {
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
+  margin-top: 6px;
   margin-bottom: 12px;
   display: flex;
   align-items: center;
@@ -130,12 +131,13 @@ input {
   box-shadow: 0 4px 12px rgba(143, 167, 145, 0.25);
 }
 
-.btn-full:hover {
+.btn-full:hover, .submit-btn:hover {
   transform: translateY(-2px);
+  background-color: var(--pill-hover);
   box-shadow: 0 6px 18px rgba(91, 121, 93, 0.35);
 }
 
-.btn-full:active {
+.btn-full:active, .submit-btn:active {
   transform: translateY(0);
 }
 

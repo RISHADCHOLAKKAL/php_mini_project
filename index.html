@@ -4,46 +4,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Online Kanjipura</title>
+  <title>E-Canteen | Testing Portal & Directory</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .role-box {
+    .page-list {
       display: flex;
-      background-color: #d9e3d9;
-      border-radius: 20px;
-      padding: 4px;
-      margin-bottom: 20px;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+      width: 100%;
     }
 
-    .role-btn {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 16px;
-      background: transparent;
-      cursor: pointer;
+    .page-link-btn {
+      width: 100%;
+      padding: 14px 18px;
+      border: 1px solid #0e630e;
+      border-radius: 18px;
+      background-color: var(--item-bg);
+      color: var(--text-dark);
+      font-size: 15px;
       font-weight: bold;
-      font-size: 14px;
-      color: var(--text-muted);
-      transition: 0.2s;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+      transition: all 0.25s ease;
     }
 
-    .role-btn.active {
+    .page-link-btn:hover {
       background-color: var(--primary-pill);
       color: var(--white);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(91, 121, 93, 0.3);
     }
 
-    .footer {
-      margin-top: 15px;
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .footer a {
+    .badge-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      background-color: var(--card-bg);
       color: var(--text-dark);
-      font-weight: bold;
-      text-decoration: underline;
-      cursor: pointer;
+    }
+
+    .page-link-btn:hover .badge-tag {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: var(--white);
     }
   </style>
 </head>
@@ -51,96 +57,48 @@
 <body>
 
   <div class="card">
-    <h2>Online Kanjipura</h2>
-    <p id="subTitle">Take the first step</p>
-
-    <div class="role-box">
-      <button class="role-btn" id="guestBtn" onclick="setRole('guest')">Guest</button>
-      <button class="role-btn active" id="studentBtn" onclick="setRole('student')">Student</button>
-      <button class="role-btn" id="adminBtn" onclick="setRole('admin')">Admin</button>
+    <div class="header">
+      <h2>E-Canteen Test Hub</h2>
+      <p>Testing Directory for GitHub Pages</p>
     </div>
 
-    <form onsubmit="event.preventDefault(); handleAuthSubmit();">
-      <div id="guestInputs" style="display: none;">
-        <input type="text" id="guestNameInput" placeholder="Enter your name">
-      </div>
+    <div class="page-list">
+      <a href="login.html" class="page-link-btn">
+        <span>🔐 Login / Sign Up Page</span>
+        <span class="badge-tag">login.html</span>
+      </a>
 
-      <div id="studentInputs">
-        <input type="email" class="student-field" placeholder="E-mail" required>
-        <input type="text" class="student-field" placeholder="Username" required>
-        <input type="password" class="student-field" placeholder="Password" required>
-        <input type="password" class="student-field" placeholder="Confirm password" required>
-      </div>
+      <a href="home.html" class="page-link-btn">
+        <span>🏠 User Home Screen</span>
+        <span class="badge-tag">home.html</span>
+      </a>
 
-      <button type="submit" class="submit-btn" id="submitBtn">Sign up</button>
-    </form>
+      <a href="menu.html" class="page-link-btn">
+        <span>🥗 Available Items Menu</span>
+        <span class="badge-tag">menu.html</span>
+      </a>
 
-    <div class="footer" id="footerBox">
-      Already have an account? <a onclick="alert('Switching form...')">Sign in</a>
+      <a href="open-order.html" class="page-link-btn">
+        <span>🛒 Open Order Checkout</span>
+        <span class="badge-tag">open-order.html</span>
+      </a>
+
+      <a href="admin-home.html" class="page-link-btn">
+        <span>🛠️ Admin Dashboard</span>
+        <span class="badge-tag">admin-home.html</span>
+      </a>
+
+      <a href="staff.html" class="page-link-btn">
+        <span>📦 Staff Stock Manager</span>
+        <span class="badge-tag">staff.html</span>
+      </a>
+
+      <a href="sales-report.html" class="page-link-btn">
+        <span>📊 Admin Sales Report</span>
+        <span class="badge-tag">sales-report.html</span>
+      </a>
     </div>
   </div>
-
-  <script>
-    let currentRole = 'student';
-
-    function setRole(role) {
-      currentRole = role;
-      const guestInputs = document.getElementById('guestInputs');
-      const studentInputs = document.getElementById('studentInputs');
-      const guestNameInput = document.getElementById('guestNameInput');
-      const studentFields = document.querySelectorAll('.student-field');
-      const submitBtn = document.getElementById('submitBtn');
-      const guestBtn = document.getElementById('guestBtn');
-      const studentBtn = document.getElementById('studentBtn');
-      const adminBtn = document.getElementById('adminBtn');
-      const footerBox = document.getElementById('footerBox');
-      const subTitle = document.getElementById('subTitle');
-
-      guestBtn.className = 'role-btn' + (role === 'guest' ? ' active' : '');
-      studentBtn.className = 'role-btn' + (role === 'student' ? ' active' : '');
-      adminBtn.className = 'role-btn' + (role === 'admin' ? ' active' : '');
-
-      if (role === 'guest') {
-        guestInputs.style.display = 'block';
-        studentInputs.style.display = 'none';
-        footerBox.style.display = 'none';
-
-        guestNameInput.required = true;
-        studentFields.forEach(field => field.required = false);
-
-        submitBtn.textContent = 'Enter Website';
-        subTitle.textContent = 'Explore as Guest';
-      } else if (role === 'admin') {
-        guestInputs.style.display = 'none';
-        studentInputs.style.display = 'block';
-        footerBox.style.display = 'none';
-
-        guestNameInput.required = false;
-        studentFields.forEach(field => field.required = true);
-
-        submitBtn.textContent = 'Admin Sign In';
-        subTitle.textContent = 'Admin Portal Access';
-      } else {
-        guestInputs.style.display = 'none';
-        studentInputs.style.display = 'block';
-        footerBox.style.display = 'block';
-
-        guestNameInput.required = false;
-        studentFields.forEach(field => field.required = true);
-
-        submitBtn.textContent = 'Sign up';
-        subTitle.textContent = 'Take the first step';
-      }
-    }
-
-    function handleAuthSubmit() {
-      if (currentRole === 'admin') {
-        window.location.href = 'admin-home.html';
-      } else {
-        window.location.href = 'home.html';
-      }
-    }
-  </script>
 
 </body>
 
