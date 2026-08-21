@@ -135,88 +135,65 @@
 
   <script src="store.js"></script>
   <script>
-    const userCart = {};
+    var userCart = {};
+    var cachedItems = [];
 
     function renderOrderItems() {
-      const items = getMenuItems();
-      const container = document.getElementById('orderList');
-      container.innerHTML = '';
-
-      items.forEach(item => {
-        if (!(item.id in userCart)) userCart[item.id] = 0;
-
-        const isSoldOut = !item.isAvailable || item.qty <= 0;
-        const card = document.createElement('div');
-        card.className = `order-card ${isSoldOut ? 'sold-out' : ''}`;
-
-        card.innerHTML = `
-          <div class="item-info">
-            <div class="item-title">${item.name}</div>
-            <div class="item-price" style="${isSoldOut ? 'color: #c62828;' : ''}">${isSoldOut ? 'Sold Out' : '₹' + item.price}</div>
-          </div>
-          <div class="qty-controls">
-            ${isSoldOut ? `<button class="qty-btn" disabled>+</button>` : `
-              <button class="qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
-              <span class="qty-val" id="qty-${item.id}">${userCart[item.id]}</span>
-              <button class="qty-btn" onclick="updateQty(${item.id}, 1, ${item.qty})">+</button>
-            `}
-          </div>
-        `;
-        container.appendChild(card);
+      getMenuItems(function(items) {
+        cachedItems = items;
+        var container = document.getElementById('orderList');
+        container.innerHTML = '';
+        items.forEach(function(item) {
+          if (!(item.id in userCart)) userCart[item.id] = 0;
+          var isSoldOut = !item.isAvailable || item.qty <= 0;
+          var card = document.createElement('div');
+          card.className = 'order-card' + (isSoldOut ? ' sold-out' : '');
+          card.innerHTML = '<div class="item-info"><div class="item-title">' + item.name + '</div>' +
+            '<div class="item-price"' + (isSoldOut ? ' style="color:#c62828;"' : '') + '>' + (isSoldOut ? 'Sold Out' : '₹' + item.price) + '</div></div>' +
+            '<div class="qty-controls">' +
+            (isSoldOut ? '<button class="qty-btn" disabled>+</button>' :
+              '<button class="qty-btn" onclick="updateQty(' + item.id + ',-1)">-</button>' +
+              '<span class="qty-val" id="qty-' + item.id + '">' + userCart[item.id] + '</span>' +
+              '<button class="qty-btn" onclick="updateQty(' + item.id + ',1,' + item.qty + ')">+</button>') +
+            '</div>';
+          container.appendChild(card);
+        });
+        calculateTotal();
       });
-      calculateTotal();
     }
 
     function updateQty(id, delta, maxQty) {
-      if (delta > 0 && userCart[id] >= maxQty) {
-        alert('Cannot select more than available stock quantity!');
-        return;
-      }
-      userCart[id] = Math.max(0, userCart[id] + delta);
-      document.getElementById(`qty-${id}`).textContent = userCart[id];
+      if (delta > 0 && userCart[id] >= maxQty) { alert('Cannot exceed stock!'); return; }
+      userCart[id] = Math.max(0, (userCart[id] || 0) + delta);
+      var el = document.getElementById('qty-' + id);
+      if (el) el.textContent = userCart[id];
       calculateTotal();
     }
 
     function calculateTotal() {
-      const items = getMenuItems();
-      let count = 0;
-      let total = 0;
-
-      items.forEach(item => {
-        const qty = userCart[item.id] || 0;
-        count += qty;
-        total += qty * item.price;
+      var count = 0, total = 0;
+      cachedItems.forEach(function(item) {
+        var q = userCart[item.id] || 0;
+        count += q;
+        total += q * item.price;
       });
-
       document.getElementById('itemCount').textContent = count + ' Items';
       document.getElementById('totalPrice').textContent = 'Total: ₹' + total;
       return total;
     }
 
     function placeOrder() {
-      const items = getMenuItems();
-      let count = 0;
-      for (const id in userCart) count += userCart[id];
-
-      if (count === 0) {
-        alert('Please select at least 1 item to place order.');
-        return;
-      }
-
-      // Save sale order history
-      const orderItems = [];
-      items.forEach(item => {
-        if (userCart[item.id] > 0) {
-          orderItems.push({ name: item.name, qty: userCart[item.id], price: item.price });
-          item.qty = Math.max(0, item.qty - userCart[item.id]);
-          if (item.qty === 0) item.isAvailable = false;
-        }
+      var count = 0;
+      for (var id in userCart) count += userCart[id];
+      if (count === 0) { alert('Select at least 1 item.'); return; }
+      var orderItems = [];
+      cachedItems.forEach(function(item) {
+        if (userCart[item.id] > 0) orderItems.push({ name: item.name, qty: userCart[item.id], price: item.price });
       });
-      saveMenuItems(items);
-      recordSale("Open Order", null, orderItems, calculateTotal());
-
-      alert('Order Placed Successfully!');
-      window.location.href = 'home.html';
+      recordSale({ type: 'Open Order', table: null, total: calculateTotal(), items: orderItems }, function() {
+        alert('Order Placed!');
+        window.location.href = 'home.html';
+      });
     }
 
     renderOrderItems();

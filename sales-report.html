@@ -171,63 +171,40 @@
 
   <script src="store.js"></script>
   <script>
-    let currentFilter = 'all';
+    var currentFilter = 'all';
 
     function renderSalesReport() {
-      const sales = getSalesHistory();
-      const listContainer = document.getElementById('salesList');
-      listContainer.innerHTML = '';
-
-      let revenueSum = 0;
-      let orderCount = 0;
-
-      const filteredSales = sales.filter(order => {
-        if (currentFilter === 'tables') return order.table !== null;
-        if (currentFilter === 'open') return order.table === null;
-        return true;
-      });
-
-      sales.forEach(order => {
-        revenueSum += order.total;
-        orderCount++;
-      });
-
-      document.getElementById('totalRevenue').textContent = '₹' + revenueSum;
-      document.getElementById('totalOrders').textContent = orderCount;
-
-      if (filteredSales.length === 0) {
-        listContainer.innerHTML = `<div class="empty-state">No orders found for this filter.</div>`;
-        return;
-      }
-
-      filteredSales.forEach(order => {
-        const card = document.createElement('div');
-        card.className = 'sales-card';
-
-        const dateObj = new Date(order.date);
-        const timeFormatted = isNaN(dateObj.getTime()) ? order.date : dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        const itemsString = order.items.map(item => `${item.name} x${item.qty}`).join(', ');
-
-        card.innerHTML = `
-          <div class="sales-header">
-            <span class="sales-id">${order.id}</span>
-            <span class="sales-type">${order.type}</span>
-          </div>
-          <div class="order-items-summary">${itemsString}</div>
-          <div class="sales-details">
-            <span>Time: ${timeFormatted}</span>
-            <span style="font-weight: 800; font-size: 15px; color: var(--text-dark);">Total: ₹${order.total}</span>
-          </div>
-        `;
-        listContainer.appendChild(card);
+      getSalesHistory(function(sales) {
+        var listContainer = document.getElementById('salesList');
+        listContainer.innerHTML = '';
+        var revenueSum = 0, orderCount = 0;
+        sales.forEach(function(o) { revenueSum += o.total; orderCount++; });
+        document.getElementById('totalRevenue').textContent = '₹' + revenueSum;
+        document.getElementById('totalOrders').textContent = orderCount;
+        var filtered = sales.filter(function(o) {
+          if (currentFilter === 'tables') return o.table !== null;
+          if (currentFilter === 'open') return o.table === null;
+          return true;
+        });
+        if (filtered.length === 0) { listContainer.innerHTML = '<div class="empty-state">No orders found.</div>'; return; }
+        filtered.forEach(function(order) {
+          var card = document.createElement('div');
+          card.className = 'sales-card';
+          var d = new Date(order.date);
+          var t = isNaN(d.getTime()) ? order.date : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          var items = order.items.map(function(i) { return i.name + ' x' + i.qty; }).join(', ');
+          card.innerHTML = '<div class="sales-header"><span class="sales-id">' + order.id + '</span><span class="sales-type">' + order.type + '</span></div>' +
+            '<div class="order-items-summary">' + items + '</div>' +
+            '<div class="sales-details"><span>Time: ' + t + '</span><span style="font-weight:800;font-size:15px;color:var(--text-dark);">Total: ₹' + order.total + '</span></div>';
+          listContainer.appendChild(card);
+        });
       });
     }
 
-    function filterSales(type, element) {
+    function filterSales(type, el) {
       currentFilter = type;
-      document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
-      element.classList.add('active');
+      document.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
+      el.classList.add('active');
       renderSalesReport();
     }
 

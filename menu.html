@@ -136,41 +136,27 @@
     let currentCategory = 'all';
 
     function renderMenu() {
-      const items = getMenuItems();
-      const listContainer = document.getElementById('menuList');
-      listContainer.innerHTML = '';
-
-      items.forEach(item => {
-        if (currentCategory !== 'all' && item.category !== currentCategory) return;
-
-        const isSoldOut = !item.isAvailable || item.qty <= 0;
-        const card = document.createElement('div');
-        card.className = `menu-card ${isSoldOut ? 'sold-out' : ''}`;
-        card.setAttribute('data-category', item.category);
-
-        card.innerHTML = `
-          <div class="item-icon-box">
-            <svg viewBox="0 0 24 24"><path d="${item.icon}"/></svg>
-          </div>
-          <div class="item-details">
-            <div class="item-title">${item.name}</div>
-            <div class="item-desc">${item.desc}</div>
-            <div class="item-meta">
-              <span class="item-price">₹${item.price}</span>
-              <span class="status-badge ${isSoldOut ? 'unavailable' : 'available'}">
-                <span class="status-dot"></span> ${isSoldOut ? 'Sold Out' : 'Available'}
-              </span>
-            </div>
-          </div>
-          <div class="qty-box ${isSoldOut ? 'zero' : ''}" title="Items left">Qty: ${isSoldOut ? 0 : item.qty}</div>
-        `;
-        listContainer.appendChild(card);
+      getMenuItems(function(items) {
+        const listContainer = document.getElementById('menuList');
+        listContainer.innerHTML = '';
+        items.forEach(function(item) {
+          if (currentCategory !== 'all' && item.category !== currentCategory) return;
+          const isSoldOut = !item.isAvailable || item.qty <= 0;
+          const card = document.createElement('div');
+          card.className = 'menu-card' + (isSoldOut ? ' sold-out' : '');
+          card.innerHTML = '<div class="item-icon-box"><svg viewBox="0 0 24 24"><path d="' + item.icon + '"/></svg></div>' +
+            '<div class="item-details"><div class="item-title">' + item.name + '</div><div class="item-desc">' + item.desc + '</div>' +
+            '<div class="item-meta"><span class="item-price">₹' + item.price + '</span>' +
+            '<span class="status-badge ' + (isSoldOut ? 'unavailable' : 'available') + '"><span class="status-dot"></span> ' + (isSoldOut ? 'Sold Out' : 'Available') + '</span></div></div>' +
+            '<div class="qty-box ' + (isSoldOut ? 'zero' : '') + '" title="Items left">Qty: ' + (isSoldOut ? 0 : item.qty) + '</div>';
+          listContainer.appendChild(card);
+        });
       });
     }
 
     function filterCategory(category, element) {
       currentCategory = category;
-      document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+      document.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
       element.classList.add('active');
       renderMenu();
     }

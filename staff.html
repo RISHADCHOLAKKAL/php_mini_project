@@ -199,106 +199,65 @@
 
   <script src="store.js"></script>
   <script>
-    function renderStaffItems() {
-      const items = getMenuItems();
-      const container = document.getElementById('staffList');
-      container.innerHTML = '';
+    var cachedItems = [];
 
-      items.forEach((item, index) => {
-        const card = document.createElement('div');
-        card.className = 'edit-card';
-        card.innerHTML = `
-          <div class="edit-row">
-            <input type="text" class="edit-input edit-name" value="${item.name}" id="name-${index}">
-            <input type="number" class="edit-input edit-price" value="${item.price}" id="price-${index}" placeholder="Price">
-          </div>
-          <div class="edit-row">
-            <input type="number" class="edit-input edit-qty" value="${item.qty}" id="qty-${index}" placeholder="Qty">
-            <button class="status-toggle ${item.isAvailable && item.qty > 0 ? 'on' : 'off'}" id="status-${index}" onclick="toggleStatus(${index})">
-              ${item.isAvailable && item.qty > 0 ? 'Available' : 'Sold Out'}
-            </button>
-            <button class="save-btn" onclick="saveSingleItem(${index})">Save</button>
-          </div>
-        `;
-        container.appendChild(card);
+    function renderStaffItems() {
+      getMenuItems(function(items) {
+        cachedItems = items;
+        var container = document.getElementById('staffList');
+        container.innerHTML = '';
+        items.forEach(function(item, index) {
+          var card = document.createElement('div');
+          card.className = 'edit-card';
+          var statusOn = item.isAvailable && item.qty > 0;
+          card.innerHTML = '<div class="edit-row">' +
+            '<input type="text" class="edit-input edit-name" value="' + item.name + '" id="name-' + index + '">' +
+            '<input type="number" class="edit-input edit-price" value="' + item.price + '" id="price-' + index + '" placeholder="Price">' +
+            '</div><div class="edit-row">' +
+            '<input type="number" class="edit-input edit-qty" value="' + item.qty + '" id="qty-' + index + '" placeholder="Qty">' +
+            '<button class="status-toggle ' + (statusOn ? 'on' : 'off') + '" id="status-' + index + '" onclick="toggleStatus(' + index + ')">' + (statusOn ? 'Available' : 'Sold Out') + '</button>' +
+            '<button class="save-btn" onclick="saveSingleItem(' + index + ')">Save</button>' +
+            '</div>';
+          container.appendChild(card);
+        });
       });
     }
 
-    function openAddModal() {
-      document.getElementById('addModal').style.display = 'flex';
-    }
-
-    function closeAddModal() {
-      document.getElementById('addModal').style.display = 'none';
-    }
+    function openAddModal() { document.getElementById('addModal').style.display = 'flex'; }
+    function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
 
     function addNewItem() {
-      const name = document.getElementById('newItemName').value.trim();
-      const desc = document.getElementById('newItemDesc').value.trim() || 'Delicious canteen item';
-      const price = parseInt(document.getElementById('newItemPrice').value) || 0;
-      const qty = parseInt(document.getElementById('newItemQty').value) || 0;
-      const category = document.getElementById('newItemCategory').value;
-
-      if (!name || price <= 0 || qty < 0) {
-        alert('Please fill out item name, valid price, and quantity!');
-        return;
-      }
-
-      const items = getMenuItems();
-      const newItem = {
-        id: Date.now(),
-        name,
-        desc,
-        price,
-        category,
-        qty,
-        isAvailable: qty > 0,
-        icon: "M11 9H9V2H7v7H5V2H3v7c0 2.12 1.46 3.9 3.45 4.35V22h2.1v-8.65C10.54 12.9 12 11.12 12 9V2h-1v7zm8-7h-2c-1.1 0-2 .9-2 2v6c0 1.66 1.34 3 3 3v8h2V2z"
-      };
-
-      items.push(newItem);
-      saveMenuItems(items);
-
-      closeAddModal();
-      alert(`Added ${name} successfully!`);
-
-      // Clear input fields
-      document.getElementById('newItemName').value = '';
-      document.getElementById('newItemDesc').value = '';
-      document.getElementById('newItemPrice').value = '';
-      document.getElementById('newItemQty').value = '';
-
-      renderStaffItems();
+      var name = document.getElementById('newItemName').value.trim();
+      var desc = document.getElementById('newItemDesc').value.trim() || 'Delicious canteen item';
+      var price = parseInt(document.getElementById('newItemPrice').value) || 0;
+      var qty = parseInt(document.getElementById('newItemQty').value) || 0;
+      var category = document.getElementById('newItemCategory').value;
+      if (!name || price <= 0) { alert('Fill name and valid price!'); return; }
+      saveMenuItem({ name: name, desc: desc, price: price, category: category, qty: qty, isAvailable: qty > 0 ? 1 : 0, icon: 'M11 9H9V2H7v7H5V2H3v7c0 2.12 1.46 3.9 3.45 4.35V22h2.1v-8.65C10.54 12.9 12 11.12 12 9V2h-1v7zm8-7h-2c-1.1 0-2 .9-2 2v6c0 1.66 1.34 3 3 3v8h2V2z' }, function() {
+        closeAddModal();
+        document.getElementById('newItemName').value = '';
+        document.getElementById('newItemDesc').value = '';
+        document.getElementById('newItemPrice').value = '';
+        document.getElementById('newItemQty').value = '';
+        renderStaffItems();
+      });
     }
 
     function toggleStatus(index) {
-      const items = getMenuItems();
-      items[index].isAvailable = !items[index].isAvailable;
-      if (!items[index].isAvailable) items[index].qty = 0;
-      else if (items[index].qty === 0) items[index].qty = 10;
-      saveMenuItems(items);
-      renderStaffItems();
+      var item = cachedItems[index];
+      item.isAvailable = item.isAvailable ? 0 : 1;
+      if (!item.isAvailable) item.qty = 0; else if (item.qty === 0) item.qty = 10;
+      saveMenuItem(item, function() { renderStaffItems(); });
     }
 
     function saveSingleItem(index) {
-      const items = getMenuItems();
-      const newName = document.getElementById(`name-${index}`).value.trim();
-      const newPrice = parseInt(document.getElementById(`price-${index}`).value) || 0;
-      const newQty = parseInt(document.getElementById(`qty-${index}`).value) || 0;
-
-      if (!newName) {
-        alert('Item name cannot be empty!');
-        return;
-      }
-
-      items[index].name = newName;
-      items[index].price = newPrice;
-      items[index].qty = newQty;
-      items[index].isAvailable = newQty > 0;
-
-      saveMenuItems(items);
-      alert(`Updated ${newName} successfully!`);
-      renderStaffItems();
+      var item = cachedItems[index];
+      item.name = document.getElementById('name-' + index).value.trim();
+      item.price = parseInt(document.getElementById('price-' + index).value) || 0;
+      item.qty = parseInt(document.getElementById('qty-' + index).value) || 0;
+      item.isAvailable = item.qty > 0 ? 1 : 0;
+      if (!item.name) { alert('Name cannot be empty!'); return; }
+      saveMenuItem(item, function() { alert('Updated!'); renderStaffItems(); });
     }
 
     renderStaffItems();
