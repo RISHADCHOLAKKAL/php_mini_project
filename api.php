@@ -1,95 +1,42 @@
 <?php
+$db = new mysqli('localhost', 'root', '', 'ecanteen');
 header('Content-Type: application/json');
 
-$db = new mysqli('localhost', 'root', '', 'ecanteen');
-if ($db->connect_error) die(json_encode(['error' => 'db fail']));
-
-$method = $_SERVER['REQUEST_METHOD'];
-
-if ($method === 'GET') {
-    $a = $_GET['action'] ?? '';
-
-    if ($a === 'menu') {
-        $r = $db->query("SELECT * FROM menu_items");
-        $out = [];
-        while ($row = $r->fetch_assoc()) {
-            $out[] = [
-                'id' => (int)$row['id'],
-                'name' => $row['name'],
-                'desc' => $row['description'],
-                'price' => (int)$row['price'],
-                'category' => $row['category'],
-                'qty' => (int)$row['qty'],
-                'isAvailable' => (bool)$row['is_available'],
-                'icon' => $row['icon']
-            ];
-        }
-        echo json_encode($out);
-    }
-
-    elseif ($a === 'sales') {
-        $orders = [];
-        $r = $db->query("SELECT * FROM orders ORDER BY created DESC");
-        while ($o = $r->fetch_assoc()) {
-            $oid = (int)$o['id'];
-            $items = [];
-            $ir = $db->query("SELECT item_name,qty,price FROM order_items WHERE order_id=$oid");
-            while ($i = $ir->fetch_assoc()) {
-                $items[] = ['name' => $i['item_name'], 'qty' => (int)$i['qty'], 'price' => (int)$i['price']];
-            }
-            $orders[] = [
-                'id' => $o['order_code'],
-                'date' => $o['created'],
-                'type' => $o['order_type'],
-                'table' => $o['table_num'] ? (int)$o['table_num'] : null,
-                'total' => (int)$o['total'],
-                'items' => $items
-            ];
-        }
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if (($_GET['action'] ?? '') === 'menu') {
+        echo json_encode($db->query("SELECT id, name, description AS `desc`, price, category, qty, is_available AS isAvailable, icon FROM menu_items")->fetch_all(MYSQLI_ASSOC));
+    } else {
+        $orders = $db->query("SELECT code AS id, created AS date, type, NULL AS `table`, total, items FROM orders ORDER BY id DESC")->fetch_all(MYSQLI_ASSOC);
+        foreach ($orders as &$o) $o['items'] = json_decode($o['items'], true);
         echo json_encode($orders);
     }
-
-    else { echo json_encode(['error' => 'bad action']); }
-}
-
-elseif ($method === 'POST') {
+} else {
     $d = json_decode(file_get_contents('php://input'), true);
-    $a = $d['action'] ?? '';
-
-    if ($a === 'save_item') {
+    if ($d['action'] === 'save_item') {
         $i = $d['item'];
         if (!empty($i['id'])) {
-            $st = $db->prepare("UPDATE menu_items SET name=?,description=?,price=?,category=?,qty=?,is_available=? WHERE id=?");
-            $st->bind_param('ssisiii', $i['name'], $i['desc'], $i['price'], $i['category'], $i['qty'], $i['isAvailable'], $i['id']);
+            $s = $db->prepare("UPDATE menu_items SET name=?, description=?, price=?, category=?, qty=?, is_available=? WHERE id=?");
+            $s->bind_param('ssisiii', $i['name'], $i['desc'], $i['price'], $i['category'], $i['qty'], $i['isAvailable'], $i['id']);
         } else {
-            $st = $db->prepare("INSERT INTO menu_items(name,description,price,category,qty,is_available,icon) VALUES(?,?,?,?,?,?,?)");
+            $s = $db->prepare("INSERT INTO menu_items (name, description, price, category, qty, is_available, icon) VALUES (?,?,?,?,?,?,?)");
             $icon = $i['icon'] ?? '';
-            $st->bind_param('ssissis', $i['name'], $i['desc'], $i['price'], $i['category'], $i['qty'], $i['isAvailable'], $icon);
+            $s->bind_param('ssissis', $i['name'], $i['desc'], $i['price'], $i['category'], $i['qty'], $i['isAvailable'], $icon);
         }
-        $st->execute();
-        echo json_encode(['ok' => true, 'id' => $db->insert_id ?: $i['id']]);
-    }
-
-    elseif ($a === 'record_sale') {
+        $s->execute();
+        echo json_encode(['ok' => true]);
+    } else {
         $o = $d['order'];
         $code = 'ORD-' . time();
-        $st = $db->prepare("INSERT INTO orders(order_code,order_type,table_num,total) VALUES(?,?,?,?)");
-        $st->bind_param('ssii', $code, $o['type'], $o['table'], $o['total']);
-        $st->execute();
-        $oid = $db->insert_id;
-        $si = $db->prepare("INSERT INTO order_items(order_id,item_name,qty,price) VALUES(?,?,?,?)");
+        $items = json_encode($o['items']);
+        $s = $db->prepare("INSERT INTO orders (code, type, total, items) VALUES (?,?,?,?)");
+        $s->bind_param('ssis', $code, $o['type'], $o['total'], $items);
+        $s->execute();
         foreach ($o['items'] as $it) {
-            $si->bind_param('isii', $oid, $it['name'], $it['qty'], $it['price']);
-            $si->execute();
+            $s2 = $db->prepare("UPDATE menu_items SET qty=GREATEST(0, qty-?), is_available=IF(qty-?>0, 1, 0) WHERE name=?");
+            $s2->bind_param('iis', $it['qty'], $it['qty'], $it['name']);
+            $s2->execute();
         }
-        // deduct stock
-        foreach ($o['items'] as $it) {
-            $db->query("UPDATE menu_items SET qty=GREATEST(0,qty-{$it['qty']}), is_available=IF(qty-{$it['qty']}>0,1,0) WHERE name='" . $db->real_escape_string($it['name']) . "'");
-        }
-        echo json_encode(['ok' => true, 'id' => $code]);
+        echo json_encode(['ok' => true]);
     }
-
-    else { echo json_encode(['error' => 'bad action']); }
 }
-
 $db->close();
