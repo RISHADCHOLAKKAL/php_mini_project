@@ -1,13 +1,18 @@
 <?php
-$db = new mysqli('localhost', 'root', '', 'ecanteen');
+// Replace 'YOUR_VPANEL_PASSWORD' with your actual vPanel password
+$db = new mysqli('sql111.infinityfree.com', 'if0_41975746', '5fBKvpqqB7y', 'if0_41975746_ecanteen');
 header('Content-Type: application/json');
+if ($db->connect_error) die(json_encode(['error' => 'db fail']));
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (($_GET['action'] ?? '') === 'menu') {
         echo json_encode($db->query("SELECT id, name, description AS `desc`, price, category, qty, is_available AS isAvailable, icon FROM menu_items")->fetch_all(MYSQLI_ASSOC));
     } else {
-        $orders = $db->query("SELECT code AS id, created AS date, type, NULL AS `table`, total, items FROM orders ORDER BY id DESC")->fetch_all(MYSQLI_ASSOC);
-        foreach ($orders as &$o) $o['items'] = json_decode($o['items'], true);
+        $orders = $db->query("SELECT id, order_code AS id, created AS date, order_type AS type, table_num AS `table`, total FROM orders ORDER BY id DESC")->fetch_all(MYSQLI_ASSOC);
+        foreach ($orders as &$o) {
+            $oid = $o['id'];
+            $o['items'] = $db->query("SELECT item_name AS name, qty, price FROM order_items WHERE order_id=$oid")->fetch_all(MYSQLI_ASSOC);
+        }
         echo json_encode($orders);
     }
 } else {
@@ -27,14 +32,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } else {
         $o = $d['order'];
         $code = 'ORD-' . time();
-        $items = json_encode($o['items']);
-        $s = $db->prepare("INSERT INTO orders (code, type, total, items) VALUES (?,?,?,?)");
-        $s->bind_param('ssis', $code, $o['type'], $o['total'], $items);
+        $s = $db->prepare("INSERT INTO orders (order_code, order_type, table_num, total) VALUES (?,?,?,?)");
+        $s->bind_param('ssii', $code, $o['type'], $o['table'], $o['total']);
         $s->execute();
+        $oid = $db->insert_id;
+
         foreach ($o['items'] as $it) {
-            $s2 = $db->prepare("UPDATE menu_items SET qty=GREATEST(0, qty-?), is_available=IF(qty-?>0, 1, 0) WHERE name=?");
-            $s2->bind_param('iis', $it['qty'], $it['qty'], $it['name']);
+            $s2 = $db->prepare("INSERT INTO order_items (order_id, item_name, qty, price) VALUES (?,?,?,?)");
+            $s2->bind_param('isii', $oid, $it['name'], $it['qty'], $it['price']);
             $s2->execute();
+
+            $s3 = $db->prepare("UPDATE menu_items SET qty=GREATEST(0, qty-?), is_available=IF(qty-?>0, 1, 0) WHERE name=?");
+            $s3->bind_param('iis', $it['qty'], $it['qty'], $it['name']);
+            $s3->execute();
         }
         echo json_encode(['ok' => true]);
     }
