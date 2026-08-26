@@ -4,213 +4,218 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>E-Canteen | Admin Sales Report</title>
+  <title>Sales Report</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Metric summary cards grid */
-    .summary-grid {
+    .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
-    .summary-card {
-      background-color: var(--item-bg);
+    .box {
+      background: var(--item-bg);
       border: 1px solid #0e630e;
-      border-radius: 18px;
-      padding: 12px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+      border-radius: 16px;
+      padding: 12px;
     }
 
-    .summary-card .label {
-      font-size: 12px;
+    .box .lbl {
+      font-size: 11px;
+      font-weight: bold;
       color: #384d39;
-      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
 
-    .summary-card .val {
+    .box .val {
       font-size: 20px;
       font-weight: 800;
-      color: var(--text-dark);
     }
 
-    /* Filter bar chips */
-    .filter-bar {
+    .bar {
       display: flex;
-      gap: 8px;
-      margin-bottom: 14px;
+      gap: 6px;
+      margin-bottom: 10px;
       overflow-x: auto;
-      padding-bottom: 4px;
     }
 
-    .filter-chip {
-      background-color: #d9e3d9;
-      color: var(--text-dark);
+    .chip {
+      background: #d9e3d9;
       border: none;
-      padding: 8px 14px;
-      border-radius: 18px;
+      padding: 6px 12px;
+      border-radius: 14px;
       font-size: 12px;
       font-weight: bold;
       cursor: pointer;
       white-space: nowrap;
     }
 
-    .filter-chip.active {
-      background-color: var(--primary-pill);
-      color: var(--white);
+    .chip.active {
+      background: var(--primary-pill);
+      color: #fff;
     }
 
-    /* Sales report items list */
-    .sales-list {
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .nav button {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 2px 8px;
+    }
+
+    .list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       flex: 1;
       overflow-y: auto;
-      padding-right: 4px;
     }
 
-    .sales-card {
-      background-color: var(--item-bg);
+    .card-item {
+      background: var(--item-bg);
       border: 1px solid #0e630e;
-      border-radius: 20px;
-      padding: 14px 16px;
+      border-radius: 16px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+      gap: 4px;
     }
 
-    .sales-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .sales-id {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--text-dark);
-    }
-
-    .sales-type {
-      background-color: var(--primary-pill);
-      color: var(--white);
-      font-size: 11px;
-      font-weight: bold;
-      padding: 3px 10px;
-      border-radius: 12px;
-    }
-
-    .sales-details {
+    .row {
       display: flex;
       justify-content: space-between;
       font-size: 13px;
-      color: #384d39;
-      font-weight: 600;
-      border-top: 1px dashed #9cb19e;
-      padding-top: 6px;
-    }
-
-    .order-items-summary {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.4;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 30px;
-      color: var(--text-muted);
-      font-size: 14px;
+      font-weight: bold;
     }
   </style>
 </head>
 
 <body>
-
   <div class="card card-full">
     <div class="header">
-      <button class="back-btn" onclick="window.location.href='admin-home.html'" title="Back to Admin Home">
+      <button class="back-btn" onclick="location.href='admin-home.html'">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
           <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
         </svg>
       </button>
-      <h2>Admin Sales Report</h2>
-      <p>Overview of revenue & order history</p>
+      <h2>Sales Report</h2>
+      <p id="pLabel">Overview</p>
     </div>
 
-    <!-- Key Metrics Grid -->
-    <div class="summary-grid">
-      <div class="summary-card">
-        <span class="label">Total Revenue</span>
-        <span class="val" id="totalRevenue">₹0</span>
+    <div class="grid">
+      <div class="box">
+        <div class="lbl">Revenue</div>
+        <div class="val" id="rev">₹0</div>
       </div>
-      <div class="summary-card">
-        <span class="label">Total Orders</span>
-        <span class="val" id="totalOrders">0</span>
+      <div class="box">
+        <div class="lbl">Orders</div>
+        <div class="val" id="cnt">0</div>
       </div>
     </div>
 
-    <!-- Filter chips -->
-    <div class="filter-bar">
-      <button class="filter-chip active" onclick="filterSales('all', this)">All Orders</button>
-      <button class="filter-chip" onclick="filterSales('tables', this)">Tables</button>
-      <button class="filter-chip" onclick="filterSales('open', this)">Open Orders</button>
+    <div class="bar" id="pBar">
+      <button class="chip active" onclick="setP('daily',this)">Daily</button>
+      <button class="chip" onclick="setP('weekly',this)">Weekly</button>
+      <button class="chip" onclick="setP('monthly',this)">Monthly</button>
+      <button class="chip" onclick="setP('yearly',this)">Yearly</button>
+      <button class="chip" onclick="setP('all',this)">All Time</button>
     </div>
 
-    <!-- Sales Order History List -->
-    <div class="sales-list" id="salesList"></div>
+    <div class="nav" id="dNav">
+      <button onclick="shift(-1)">◀</button>
+      <span id="dLbl">Today</span>
+      <button onclick="shift(1)">▶</button>
+    </div>
+
+    <div class="bar">
+      <button class="chip active" onclick="setT('all',this)">All</button>
+      <button class="chip" onclick="setT('tables',this)">Tables</button>
+      <button class="chip" onclick="setT('open',this)">Open Orders</button>
+    </div>
+
+    <div class="list" id="salesList"></div>
   </div>
 
   <script src="store.js"></script>
   <script>
-    var currentFilter = 'all';
+    var allSales = [], period = 'daily', type = 'all', offset = 0;
 
-    function renderSalesReport() {
-      getSalesHistory(function(sales) {
-        var listContainer = document.getElementById('salesList');
-        listContainer.innerHTML = '';
-        var revenueSum = 0, orderCount = 0;
-        sales.forEach(function(o) { revenueSum += o.total; orderCount++; });
-        document.getElementById('totalRevenue').textContent = '₹' + revenueSum;
-        document.getElementById('totalOrders').textContent = orderCount;
-        var filtered = sales.filter(function(o) {
-          if (currentFilter === 'tables') return o.table !== null;
-          if (currentFilter === 'open') return o.table === null;
-          return true;
-        });
-        if (filtered.length === 0) { listContainer.innerHTML = '<div class="empty-state">No orders found.</div>'; return; }
-        filtered.forEach(function(order) {
-          var card = document.createElement('div');
-          card.className = 'sales-card';
-          var d = new Date(order.date);
-          var t = isNaN(d.getTime()) ? order.date : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          var items = order.items.map(function(i) { return i.name + ' x' + i.qty; }).join(', ');
-          card.innerHTML = '<div class="sales-header"><span class="sales-id">' + order.id + '</span><span class="sales-type">' + order.type + '</span></div>' +
-            '<div class="order-items-summary">' + items + '</div>' +
-            '<div class="sales-details"><span>Time: ' + t + '</span><span style="font-weight:800;font-size:15px;color:var(--text-dark);">Total: ₹' + order.total + '</span></div>';
-          listContainer.appendChild(card);
-        });
+    function getRange() {
+      var n = new Date(), s, e, l;
+      if (period === 'daily') {
+        s = new Date(n.getFullYear(), n.getMonth(), n.getDate() + offset);
+        e = new Date(s); e.setDate(e.getDate() + 1);
+        l = offset === 0 ? 'Today' : (offset === -1 ? 'Yesterday' : s.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }));
+      } else if (period === 'weekly') {
+        var day = n.getDay() || 7;
+        s = new Date(n.getFullYear(), n.getMonth(), n.getDate() - day + 1 + (offset * 7));
+        e = new Date(s); e.setDate(e.getDate() + 7);
+        l = s.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) + ' – ' + new Date(e - 864e5).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+      } else if (period === 'monthly') {
+        s = new Date(n.getFullYear(), n.getMonth() + offset, 1);
+        e = new Date(n.getFullYear(), n.getMonth() + offset + 1, 1);
+        l = s.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+      } else if (period === 'yearly') {
+        s = new Date(n.getFullYear() + offset, 0, 1);
+        e = new Date(n.getFullYear() + offset + 1, 0, 1);
+        l = s.getFullYear().toString();
+      } else {
+        s = new Date(0); e = new Date(9e11); l = 'All Time';
+      }
+      return { s: s, e: e, l: l };
+    }
+
+    function render() {
+      var r = getRange();
+      document.getElementById('dLbl').textContent = r.l;
+      document.getElementById('dNav').style.display = period === 'all' ? 'none' : 'flex';
+      document.getElementById('pLabel').textContent = r.l + ' overview';
+
+      var list = allSales.filter(function (o) {
+        var d = new Date(o.date);
+        return d >= r.s && d < r.e;
+      });
+
+      if (type === 'tables') list = list.filter(function (o) { return o.table; });
+      if (type === 'open') list = list.filter(function (o) { return !o.table; });
+
+      var rev = 0;
+      list.forEach(function (o) { rev += parseInt(o.total) || 0; });
+      document.getElementById('rev').textContent = '₹' + rev;
+      document.getElementById('cnt').textContent = list.length;
+
+      var container = document.getElementById('salesList');
+      container.innerHTML = list.length ? '' : '<div style="text-align:center;padding:20px;color:var(--text-muted);">No orders found</div>';
+
+      list.forEach(function (o) {
+        var items = o.items.map(function (i) { return i.name + ' x' + i.qty; }).join(', ');
+        var el = document.createElement('div');
+        el.className = 'card-item';
+        el.innerHTML =
+          '<div class="row"><span>' + o.order_code + '</span><span>' + o.type + '</span></div>' +
+          '<div style="font-size:12px;color:var(--text-muted);">' + items + '</div>' +
+          '<div class="row" style="margin-top:4px;"><span>' + (new Date(o.date)).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + '</span><span>₹' + o.total + '</span></div>';
+        container.appendChild(el);
       });
     }
 
-    function filterSales(type, el) {
-      currentFilter = type;
-      document.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
-      el.classList.add('active');
-      renderSalesReport();
-    }
+    function setP(p, el) { period = p; offset = 0; act(el, '#pBar'); render(); }
+    function setT(t, el) { type = t; act(el, el.parentElement); render(); }
+    function act(el, parent) { (typeof parent === 'string' ? document.querySelector(parent) : parent).querySelectorAll('.chip').forEach(function (c) { c.classList.remove('active'); }); el.classList.add('active'); }
+    function shift(d) { if (period !== 'all' && (offset + d) <= 0) { offset += d; render(); } }
 
-    renderSalesReport();
+    getSalesHistory(function (sales) { allSales = sales || []; render(); });
   </script>
-
 </body>
 
 </html>

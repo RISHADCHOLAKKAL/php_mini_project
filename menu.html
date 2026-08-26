@@ -4,166 +4,122 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>E-Canteen | Available Items</title>
+  <title>Available Items</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .filter-bar {
+    .bar {
       display: flex;
       gap: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       overflow-x: auto;
-      padding-bottom: 4px;
     }
 
-    .filter-chip {
-      background-color: #d9e3d9;
+    .chip {
+      background: #d9e3d9;
       color: var(--text-dark);
       border: none;
-      padding: 8px 16px;
-      border-radius: 18px;
+      padding: 6px 14px;
+      border-radius: 16px;
       font-size: 13px;
       font-weight: bold;
       cursor: pointer;
       white-space: nowrap;
     }
 
-    .filter-chip.active {
-      background-color: var(--primary-pill);
-      color: var(--white);
+    .chip.active {
+      background: var(--primary-pill);
+      color: #fff;
     }
 
-    .menu-list {
+    .list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       flex: 1;
       overflow-y: auto;
-      padding-right: 4px;
     }
 
-    .menu-card {
-      background-color: var(--item-bg);
-      border: #0e630e solid 1px;
-      border-radius: 20px;
-      padding: 14px 16px;
+    .item {
+      background: var(--item-bg);
+      border: 1px solid #0e630e;
+      border-radius: 18px;
+      padding: 12px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+      align-items: center;
     }
 
-    .menu-card.sold-out {
-      background-color: #fce8e6;
+    .item.off {
+      background: #fce8e6;
       border-color: #e57373;
     }
 
-    .item-icon-box {
-      width: 48px;
-      height: 48px;
-      background-color: var(--card-bg);
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .item-icon-box svg {
-      width: 26px;
-      height: 26px;
-      fill: var(--primary-pill);
-    }
-
-    .item-details {
-      flex: 1;
-    }
-
-    .item-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 3px;
-    }
-
-    .item-desc {
-      font-size: 12px;
-      color: #485648;
-      margin-bottom: 6px;
-    }
-
-    .item-meta {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .item-price {
+    .title {
       font-size: 15px;
       font-weight: 700;
-      color: var(--text-dark);
+    }
+
+    .desc {
+      font-size: 12px;
+      color: #485648;
+    }
+
+    .price {
+      font-weight: 700;
+      margin-top: 4px;
     }
   </style>
 </head>
 
 <body>
-
   <div class="card card-full">
     <div class="header">
-      <button class="back-btn" onclick="window.location.href='home.html'" title="Back to Home">
+      <button class="back-btn" onclick="location.href='home.html'">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
           <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
         </svg>
       </button>
       <h2>Available Items</h2>
-      <p>View food items, beverages & live status</p>
+      <p>Food & beverage status</p>
     </div>
 
-    <!-- Category Filters -->
-    <div class="filter-bar">
-      <button class="filter-chip active" onclick="filterCategory('all', this)">All Items</button>
-      <button class="filter-chip" onclick="filterCategory('food', this)">Food</button>
-      <button class="filter-chip" onclick="filterCategory('beverage', this)">Beverages</button>
-      <button class="filter-chip" onclick="filterCategory('snacks', this)">Snacks</button>
+    <div class="bar" id="catBar">
+      <button class="chip active" onclick="setCat('all',this)">All</button>
+      <button class="chip" onclick="setCat('food',this)">Food</button>
+      <button class="chip" onclick="setCat('beverage',this)">Beverages</button>
+      <button class="chip" onclick="setCat('snacks',this)">Snacks</button>
     </div>
 
-    <!-- Menu List Dynamic -->
-    <div class="menu-list" id="menuList"></div>
+    <div class="list" id="menuList"></div>
   </div>
 
   <script src="store.js"></script>
   <script>
-    let currentCategory = 'all';
-
-    function renderMenu() {
-      getMenuItems(function(items) {
-        const listContainer = document.getElementById('menuList');
-        listContainer.innerHTML = '';
-        items.forEach(function(item) {
-          if (currentCategory !== 'all' && item.category !== currentCategory) return;
-          const isSoldOut = !item.isAvailable || item.qty <= 0;
-          const card = document.createElement('div');
-          card.className = 'menu-card' + (isSoldOut ? ' sold-out' : '');
-          card.innerHTML = '<div class="item-icon-box"><svg viewBox="0 0 24 24"><path d="' + item.icon + '"/></svg></div>' +
-            '<div class="item-details"><div class="item-title">' + item.name + '</div><div class="item-desc">' + item.desc + '</div>' +
-            '<div class="item-meta"><span class="item-price">₹' + item.price + '</span>' +
-            '<span class="status-badge ' + (isSoldOut ? 'unavailable' : 'available') + '"><span class="status-dot"></span> ' + (isSoldOut ? 'Sold Out' : 'Available') + '</span></div></div>' +
-            '<div class="qty-box ' + (isSoldOut ? 'zero' : '') + '" title="Items left">Qty: ' + (isSoldOut ? 0 : item.qty) + '</div>';
-          listContainer.appendChild(card);
+    var cat = 'all';
+    function render() {
+      getMenuItems(function (items) {
+        var box = document.getElementById('menuList');
+        box.innerHTML = '';
+        (items || []).forEach(function (i) {
+          if (cat !== 'all' && i.category !== cat) return;
+          var sold = !i.isAvailable || i.qty <= 0;
+          var div = document.createElement('div');
+          div.className = 'item' + (sold ? ' off' : '');
+          div.innerHTML = '<div><div class="title">' + i.name + '</div><div class="desc">' + i.desc + '</div><div class="price">₹' + i.price + '</div></div>' +
+            '<div class="qty-box ' + (sold ? 'zero' : '') + '">' + (sold ? 'Sold Out' : 'Qty: ' + i.qty) + '</div>';
+          box.appendChild(div);
         });
       });
     }
 
-    function filterCategory(category, element) {
-      currentCategory = category;
-      document.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
-      element.classList.add('active');
-      renderMenu();
+    function setCat(c, el) {
+      cat = c;
+      document.querySelectorAll('.chip').forEach(function (b) { b.classList.remove('active'); });
+      el.classList.add('active');
+      render();
     }
-
-    renderMenu();
+    render();
   </script>
-
 </body>
 
 </html>

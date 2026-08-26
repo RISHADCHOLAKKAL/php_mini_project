@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Canteen | Sign In</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .footer { margin-top: 15px; font-size: 13px; color: var(--text-muted); }
+    .footer a { color: var(--text-dark); font-weight: bold; text-decoration: underline; }
+    #msg { padding: 10px; border-radius: 12px; font-size: 13px; font-weight: 600; margin-bottom: 12px; display: none; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="header">
+      <h2>Online Kanjipura</h2>
+      <p>Welcome back</p>
+    </div>
+
+    <div id="msg"></div>
+
+    <form id="loginForm">
+      <input type="text" id="user" placeholder="Username" required>
+      <input type="password" id="pass" placeholder="Password" required>
+      <button type="submit" class="submit-btn" id="btn">Sign in</button>
+    </form>
+
+    <div class="footer">
+      Don't have an account? <a href="index.html">Sign up</a>
+    </div>
+  </div>
+
+  <script>
+    function showMsg(text, isError) {
+      var el = document.getElementById('msg');
+      el.textContent = text;
+      el.style.display = 'block';
+      el.style.background = isError ? '#ffebee' : '#e8f5e9';
+      el.style.color = isError ? '#c62828' : '#2e7d32';
+    }
+
+    document.getElementById('loginForm').onsubmit = function(e) {
+      e.preventDefault();
+      var btn = document.getElementById('btn');
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+
+      var body = JSON.stringify({
+        action: 'login',
+        username: document.getElementById('user').value.trim(),
+        password: document.getElementById('pass').value
+      });
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', 'api.php', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.onload = function() {
+        btn.disabled = false;
+        btn.textContent = 'Sign in';
+
+        try {
+          var res = JSON.parse(xhr.responseText);
+        } catch(e) {
+          showMsg('Server error: ' + xhr.responseText.substring(0, 100), true);
+          return;
+        }
+
+        if (res.error) {
+          showMsg(res.error, true);
+          return;
+        }
+
+        showMsg('Welcome back, ' + res.username + '!', false);
+        setTimeout(function() {
+          window.location.href = (res.role === 'admin') ? 'admin-home.html' : 'home.html';
+        }, 800);
+      };
+      xhr.onerror = function() {
+        btn.disabled = false;
+        btn.textContent = 'Sign in';
+        showMsg('Network error - check if XAMPP is running', true);
+      };
+      xhr.send(body);
+    };
+  </script>
+
+</body>
+</html>
