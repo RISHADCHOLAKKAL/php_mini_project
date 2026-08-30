@@ -138,7 +138,7 @@ switch ($action) {
 
         // Query 1: Get all orders, newest first (ORDER BY id DESC)
         $result = $db->query("SELECT id, order_code, created AS date,
-                                     order_type AS type, table_num AS `table`,
+                                     order_type AS type,
                                      total
                               FROM orders
                               ORDER BY id DESC");
@@ -212,7 +212,7 @@ switch ($action) {
         $hashedPassword = password_hash($input['password'] ?? '', PASSWORD_DEFAULT);
 
         // Insert the new user into the "users" table
-        // The role is hardcoded as 'student' — only create_admin.php can make admins
+        // The role is hardcoded as 'student' — admins are created via schema.sql
         $stmt = $db->prepare("INSERT INTO users (email, username, password, role)
                               VALUES (?, ?, ?, 'student')");
         $stmt->bind_param('sss', $email, $username, $hashedPassword);
@@ -363,11 +363,9 @@ switch ($action) {
 
         // ── Step A: Insert the order header ──
         $stmt = $db->prepare("INSERT INTO orders (order_code, order_type, table_num, total)
-                              VALUES (?, ?, ?, ?)");
-        $stmt->bind_param('ssii',
+                              VALUES (?, 'Open Order', 0, ?)");
+        $stmt->bind_param('si',
             $orderCode,            // s = string (order code)
-            $order['type'],        // s = string (order type: "Open Order")
-            $order['table'],       // i = integer (table number, or null)
             $order['total']        // i = integer (total price)
         );
         $stmt->execute();

@@ -86,7 +86,7 @@ function saveMenuItem(item, callback) {
 // Fetches ALL past orders (sales history) from the database.
 //
 // RETURNS (via callback): An array of order objects, each containing:
-//   { id, order_code, date, type, table, total, items: [...] }
+//   { id, order_code, date, type, total, items: [...] }
 //
 function getSalesHistory(callback) {
     fetch(API + '?action=sales')    // GET request to api.php?action=sales
@@ -107,8 +107,6 @@ function getSalesHistory(callback) {
 // PARAMETERS:
 //   order = an object like:
 //     {
-//       type:  "Open Order",
-//       table: null,
 //       total: 150,
 //       items: [
 //         { name: "Masala Tea", qty: 2, price: 15 },

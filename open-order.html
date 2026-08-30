@@ -288,8 +288,6 @@
 
       // Send the order to the server via recordSale() from store.js
       recordSale({
-        type:  'Open Order',         // order type
-        table: null,                 // no table number (it's an open order)
         total: total,                // total price
         items: orderedItems          // array of ordered items
       }, function () {

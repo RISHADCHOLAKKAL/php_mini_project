@@ -8,7 +8,6 @@
      ║    - Revenue & Order Count summary boxes                    ║
      ║    - Period filters: Daily, Weekly, Monthly, Yearly, All    ║
      ║    - Navigate between dates (← →)                          ║
-     ║    - Order type filters: All, Tables, Open Orders           ║
      ║    - Scrollable list of individual orders                   ║
      ║                                                              ║
      ║  DATA SOURCE: store.js → api.php?action=sales               ║
@@ -178,12 +177,7 @@
       <button onclick="shiftDate(1)">▶</button>
     </div>
 
-    <!-- ── ORDER TYPE FILTER (All / Tables / Open Orders) ── -->
-    <div class="bar">
-      <button class="chip active" onclick="setType('all',this)">All</button>
-      <button class="chip" onclick="setType('tables',this)">Tables</button>
-      <button class="chip" onclick="setType('open',this)">Open Orders</button>
-    </div>
+
 
     <!-- ── SALES LIST ──
          Dynamically filled with order cards by JavaScript -->
@@ -202,7 +196,6 @@
     // ── STATE VARIABLES ──
     var allSales = [];           // all orders fetched from the server
     var period   = 'daily';      // current period filter: 'daily', 'weekly', 'monthly', 'yearly', 'all'
-    var type     = 'all';        // current type filter: 'all', 'tables', 'open'
     var offset   = 0;            // date offset: 0 = today, -1 = yesterday, -2 = day before, etc.
 
 
@@ -273,7 +266,7 @@
         // ── ALL TIME VIEW ──
         // Show ALL orders ever (no date filtering).
         startDate = new Date(0);             // very old date (Jan 1, 1970)
-        endDate   = new Date(9e11);          // very far future date
+        endDate   = new Date(9999, 0, 1);    // very far future date (year 9999)
         label     = 'All Time';
       }
 
@@ -303,19 +296,7 @@
         return orderDate >= range.s && orderDate < range.e;
       });
 
-      // ── FILTER BY ORDER TYPE ──
-      if (type === 'tables') {
-        // Only table orders (table number exists and is not 0/null)
-        filteredOrders = filteredOrders.filter(function (order) {
-          return order.table;    // truthy = has a table number
-        });
-      }
-      if (type === 'open') {
-        // Only open orders (no table number)
-        filteredOrders = filteredOrders.filter(function (order) {
-          return !order.table;   // falsy = no table number
-        });
-      }
+
 
       // ── CALCULATE REVENUE ──
       var totalRevenue = 0;
@@ -354,10 +335,10 @@
         // Row 2: Items list
         // Row 3: Date & time (left) + Total price (right)
         card.innerHTML =
-          // ── Row 1: Order Code & Type ──
+          // ── Row 1: Order Code ──
           '<div class="row">' +
             '<span>' + order.order_code + '</span>' +
-            '<span>' + order.type + '</span>' +
+            '<span style="color:var(--text-muted);font-size:12px;">Open Order</span>' +
           '</div>' +
 
           // ── Row 2: Items List ──
@@ -392,13 +373,7 @@
     }
 
 
-    // ── FUNCTION: Set Order Type Filter ──
-    // Called when user clicks All / Tables / Open Orders
-    function setType(newType, clickedElement) {
-      type = newType;
-      setActiveChip(clickedElement, clickedElement.parentElement);
-      render();
-    }
+
 
 
     // ── FUNCTION: Update Active Chip Styling ──
