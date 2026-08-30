@@ -1,19 +1,40 @@
 <!DOCTYPE html>
+<!-- ╔═══════════════════════════════════════════════════════════════╗
+     ║          admin-home.html — Admin Dashboard                  ║
+     ║                                                              ║
+     ║  PURPOSE: The main landing page for admins after login.      ║
+     ║  Shows two management options:                               ║
+     ║    1. "Update Stock" → manage menu items (staff.html)       ║
+     ║    2. "Sales Report" → view sales data (sales-report.html)  ║
+     ╚═══════════════════════════════════════════════════════════════╝ -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard</title>
+
+  <!-- Link to global stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- ═══════════════════════════════════════════════════════════
+       THE MAIN CARD — Admin navigation buttons
+       ═══════════════════════════════════════════════════════════ -->
   <div class="card">
+
+    <!-- Page header -->
     <div class="header">
       <h2>Admin Dashboard</h2>
       <p>Select management option</p>
     </div>
+
+    <!-- Button 1: Update Stock — takes admin to the stock management page -->
     <button class="btn-full" onclick="location.href='staff.html'">1. Update Stock</button>
+
+    <!-- Button 2: Sales Report — takes admin to the sales report page -->
     <button class="btn-full secondary" onclick="location.href='sales-report.html'">2. Sales Report</button>
+
+    <!-- Back link — returns to the login page -->
     <a href="index.html" style="display:inline-block;margin-top:12px;font-size:13px;color:var(--text-muted);font-weight:bold;">Back to Sign In</a>
   </div>
 </body>

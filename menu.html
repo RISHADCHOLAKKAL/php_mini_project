@@ -1,69 +1,100 @@
 <!DOCTYPE html>
+<!-- ╔═══════════════════════════════════════════════════════════════╗
+     ║            menu.html — Available Items Page                 ║
+     ║                                                              ║
+     ║  PURPOSE: Displays all menu items (food, beverages, snacks) ║
+     ║  with their name, description, price, and stock status.     ║
+     ║                                                              ║
+     ║  FEATURES:                                                   ║
+     ║    - Category filter chips (All / Food / Beverages / Snacks)║
+     ║    - Each item shows: name, description, price, quantity    ║
+     ║    - Sold-out items are shown in red                         ║
+     ║                                                              ║
+     ║  DATA SOURCE: Fetches items from api.php?action=menu        ║
+     ╚═══════════════════════════════════════════════════════════════╝ -->
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Available Items</title>
+
+  <!-- Global styles -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Page-specific styles -->
   <style>
+    /* ── Category Filter Bar ──
+       Horizontal row of filter chips (All, Food, Beverages, Snacks) */
     .bar {
-      display: flex;
-      gap: 8px;
+      display: flex;              /* lay chips in a row */
+      gap: 8px;                   /* space between chips */
       margin-bottom: 14px;
-      overflow-x: auto;
+      overflow-x: auto;           /* allow horizontal scrolling if too many chips */
     }
 
+    /* ── Filter Chip Button ──
+       Small rounded buttons for filtering by category */
     .chip {
-      background: #d9e3d9;
+      background: #d9e3d9;        /* light green background */
       color: var(--text-dark);
       border: none;
       padding: 6px 14px;
-      border-radius: 16px;
+      border-radius: 16px;        /* pill shape */
       font-size: 13px;
       font-weight: bold;
       cursor: pointer;
-      white-space: nowrap;
+      white-space: nowrap;         /* prevent text from wrapping */
     }
 
+    /* Active (selected) chip — green background with white text */
     .chip.active {
       background: var(--primary-pill);
       color: #fff;
     }
 
+    /* ── Scrollable Item List ──
+       Contains all the menu item cards */
     .list {
       display: flex;
-      flex-direction: column;
-      gap: 10px;
-      flex: 1;
-      overflow-y: auto;
+      flex-direction: column;      /* stack items vertically */
+      gap: 10px;                   /* space between items */
+      flex: 1;                     /* take up remaining space */
+      overflow-y: auto;            /* scroll if too many items */
     }
 
+    /* ── Menu Item Card ──
+       Each menu item is displayed in this card style */
     .item {
-      background: var(--item-bg);
-      border: 1px solid #0e630e;
+      background: var(--item-bg);           /* light green background */
+      border: 1px solid #0e630e;            /* dark green border */
       border-radius: 18px;
       padding: 12px;
       display: flex;
-      justify-content: space-between;
+      justify-content: space-between;       /* name on left, qty on right */
       align-items: center;
     }
 
+    /* ── Sold Out Item ──
+       When item.off class is added, the card turns red */
     .item.off {
-      background: #fce8e6;
-      border-color: #e57373;
+      background: #fce8e6;                  /* light red background */
+      border-color: #e57373;                /* red border */
     }
 
+    /* Item name (bold) */
     .title {
       font-size: 15px;
       font-weight: 700;
     }
 
+    /* Item description (smaller, muted) */
     .desc {
       font-size: 12px;
       color: #485648;
     }
 
+    /* Item price (bold) */
     .price {
       font-weight: 700;
       margin-top: 4px;
@@ -72,9 +103,16 @@
 </head>
 
 <body>
+  <!-- ═══════════════════════════════════════════════════════════
+       THE MAIN CARD — Full-screen menu display
+       ═══════════════════════════════════════════════════════════ -->
   <div class="card card-full">
+
+    <!-- Header with back button -->
     <div class="header">
+      <!-- Back button — returns to home.html -->
       <button class="back-btn" onclick="location.href='home.html'">
+        <!-- SVG arrow icon (←) -->
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
           <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
         </svg>
@@ -83,6 +121,9 @@
       <p>Food & beverage status</p>
     </div>
 
+    <!-- ── CATEGORY FILTER CHIPS ──
+         Clicking a chip calls setCat() to filter the menu.
+         "All" shows everything, others filter by category. -->
     <div class="bar" id="catBar">
       <button class="chip active" onclick="setCat('all',this)">All</button>
       <button class="chip" onclick="setCat('food',this)">Food</button>
@@ -90,34 +131,106 @@
       <button class="chip" onclick="setCat('snacks',this)">Snacks</button>
     </div>
 
+    <!-- ── MENU ITEMS LIST ──
+         This div is EMPTY in the HTML.
+         JavaScript fills it with item cards dynamically. -->
     <div class="list" id="menuList"></div>
   </div>
 
+
+  <!-- ═══════════════════════════════════════════════════════════
+       JAVASCRIPT — Menu Logic
+       ═══════════════════════════════════════════════════════════ -->
+
+  <!-- Load the API helper functions (getMenuItems, etc.) -->
   <script src="store.js"></script>
+
   <script>
-    var cat = 'all';
+    // ── VARIABLE: Currently selected category filter ──
+    // 'all' = show everything, 'food' / 'beverage' / 'snacks' = filter
+    var selectedCategory = 'all';
+
+
+    // ── FUNCTION: Render the Menu ──
+    // Fetches all items from the server and displays them on the page.
+    // Called on page load and whenever the category filter changes.
     function render() {
+
+      // Call getMenuItems() from store.js
+      // It fetches data from api.php?action=menu
+      // When data arrives, the callback function runs with the items array
       getMenuItems(function (items) {
-        var box = document.getElementById('menuList');
-        box.innerHTML = '';
-        (items || []).forEach(function (i) {
-          if (cat !== 'all' && i.category !== cat) return;
-          var sold = !i.isAvailable || i.qty <= 0;
-          var div = document.createElement('div');
-          div.className = 'item' + (sold ? ' off' : '');
-          div.innerHTML = '<div><div class="title">' + i.name + '</div><div class="desc">' + i.desc + '</div><div class="price">₹' + i.price + '</div></div>' +
-            '<div class="qty-box ' + (sold ? 'zero' : '') + '">' + (sold ? 'Sold Out' : 'Qty: ' + i.qty) + '</div>';
-          box.appendChild(div);
+
+        // Get the container div where we'll put the item cards
+        var listContainer = document.getElementById('menuList');
+
+        // Clear any existing items (so we can rebuild the list)
+        listContainer.innerHTML = '';
+
+        // Loop through each menu item
+        (items || []).forEach(function (item) {
+
+          // ── FILTER: Skip items that don't match the selected category ──
+          // If a specific category is selected and this item doesn't match, skip it
+          if (selectedCategory !== 'all' && item.category !== selectedCategory) {
+            return;    // "return" inside forEach = skip to the next item
+          }
+
+          // ── CHECK: Is this item sold out? ──
+          // Sold out if: not available OR quantity is 0 or less
+          var isSoldOut = !item.isAvailable || item.qty <= 0;
+
+          // ── CREATE the item card element ──
+          var itemCard = document.createElement('div');
+
+          // Add CSS classes — 'off' class is added if sold out (turns card red)
+          itemCard.className = 'item' + (isSoldOut ? ' off' : '');
+
+          // Set the HTML content inside the card
+          // Left side: name, description, price
+          // Right side: quantity box (or "Sold Out")
+          itemCard.innerHTML =
+            '<div>' +
+              '<div class="title">' + item.name + '</div>' +
+              '<div class="desc">' + item.desc + '</div>' +
+              '<div class="price">₹' + item.price + '</div>' +
+            '</div>' +
+            '<div class="qty-box ' + (isSoldOut ? 'zero' : '') + '">' +
+              (isSoldOut ? 'Sold Out' : 'Qty: ' + item.qty) +
+            '</div>';
+
+          // Add the card to the list container
+          listContainer.appendChild(itemCard);
         });
       });
     }
 
-    function setCat(c, el) {
-      cat = c;
-      document.querySelectorAll('.chip').forEach(function (b) { b.classList.remove('active'); });
-      el.classList.add('active');
+
+    // ── FUNCTION: Set Category Filter ──
+    // Called when the user clicks a category chip (All, Food, etc.)
+    //
+    // Parameters:
+    //   category    = the category string ('all', 'food', 'beverage', 'snacks')
+    //   clickedChip = the button element that was clicked
+    function setCat(category, clickedChip) {
+      // Update the selected category
+      selectedCategory = category;
+
+      // Remove 'active' class from ALL chips
+      document.querySelectorAll('.chip').forEach(function (chip) {
+        chip.classList.remove('active');
+      });
+
+      // Add 'active' class to the clicked chip (makes it green)
+      clickedChip.classList.add('active');
+
+      // Re-render the menu with the new filter
       render();
     }
+
+
+    // ── INITIAL RENDER ──
+    // Load and display the menu when the page first opens
     render();
   </script>
 </body>

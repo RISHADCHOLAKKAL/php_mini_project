@@ -1,12 +1,32 @@
 <!DOCTYPE html>
+<!-- ╔═══════════════════════════════════════════════════════════════╗
+     ║         open-order.html — Place an Order Page               ║
+     ║                                                              ║
+     ║  PURPOSE: Lets students/guests select items and place an     ║
+     ║  order. Shows all available items with +/- quantity buttons. ║
+     ║                                                              ║
+     ║  FEATURES:                                                   ║
+     ║    - Shows all menu items with stock status                  ║
+     ║    - Users can increase/decrease quantity with +/- buttons   ║
+     ║    - Running total is shown at the bottom                    ║
+     ║    - "Place Order" sends the order to the database           ║
+     ║    - Stock is automatically reduced after ordering           ║
+     ║                                                              ║
+     ║  DATA SOURCE: store.js → api.php (menu / record_sale)       ║
+     ╚═══════════════════════════════════════════════════════════════╝ -->
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Open Order</title>
+
+  <!-- Global styles -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Page-specific styles -->
   <style>
+    /* ── Scrollable item list ── */
     .list {
       display: flex;
       flex-direction: column;
@@ -15,6 +35,7 @@
       overflow-y: auto;
     }
 
+    /* ── Item card ── */
     .item {
       background: var(--item-bg);
       border: 1px solid #0e630e;
@@ -25,33 +46,38 @@
       align-items: center;
     }
 
+    /* ── Sold out item — faded red card ── */
     .item.off {
       background: #fce8e6;
       border-color: #e57373;
-      opacity: 0.7;
+      opacity: 0.7;             /* slightly faded to show it's unavailable */
     }
 
+    /* ── Quantity Controls Container (+/- buttons and count) ── */
     .ctrl {
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
+    /* ── Quantity Button (+/-) ── */
     .qbtn {
       width: 30px;
       height: 30px;
       border-radius: 8px;
       border: none;
-      background: var(--primary-pill);
+      background: var(--primary-pill);     /* green */
       color: #fff;
       font-weight: bold;
       cursor: pointer;
     }
 
+    /* Disabled state for sold-out items */
     .qbtn:disabled {
-      background: #ccc;
+      background: #ccc;                    /* gray when disabled */
     }
 
+    /* ── Footer Bar (order summary) ── */
     .foot {
       margin-top: 10px;
       padding: 12px;
@@ -59,14 +85,19 @@
       border-radius: 16px;
       border: 1px solid #d9e3d9;
       display: flex;
-      justify-content: space-between;
+      justify-content: space-between;     /* total on left, button on right */
       align-items: center;
     }
   </style>
 </head>
 
 <body>
+  <!-- ═══════════════════════════════════════════════════════════
+       THE MAIN CARD — Full-screen order page
+       ═══════════════════════════════════════════════════════════ -->
   <div class="card card-full">
+
+    <!-- Header with back button -->
     <div class="header">
       <button class="back-btn" onclick="location.href='home.html'">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -77,70 +108,200 @@
       <p>Select items to order</p>
     </div>
 
+    <!-- ── ITEM LIST ──
+         Dynamically filled by JavaScript with orderable items -->
     <div class="list" id="orderList"></div>
 
+    <!-- ═══════════════════════════════════════════════════════
+         FOOTER — Order Summary Bar
+         Shows: item count, total price, and "Place Order" button
+         ═══════════════════════════════════════════════════════ -->
     <div class="foot">
       <div>
+        <!-- Item count (e.g., "3 Items") -->
         <div id="cnt" style="font-size:12px;color:#6b7a6b;font-weight:bold;">0 Items</div>
+        <!-- Total price (e.g., "Total: ₹150") -->
         <div id="tot" style="font-size:18px;font-weight:800;">Total: ₹0</div>
       </div>
-      <button class="submit-btn" style="width:auto;padding:10px 18px;margin:0;" onclick="place()">Place Order</button>
+      <!-- Place Order button -->
+      <button class="submit-btn" style="width:auto;padding:10px 18px;margin:0;" onclick="placeOrder()">Place Order</button>
     </div>
   </div>
 
-  <script src="store.js"></script>
-  <script>
-    var cart = {}, cached = [];
 
+  <!-- ═══════════════════════════════════════════════════════════
+       JAVASCRIPT — Order Logic
+       ═══════════════════════════════════════════════════════════ -->
+
+  <!-- Load API helper functions -->
+  <script src="store.js"></script>
+
+  <script>
+    // ── VARIABLES ──
+
+    // "cart" is an object that tracks how many of each item the user wants.
+    // It maps item IDs to quantities.
+    // Example: { 1: 2, 3: 1 } means: 2 of item #1, 1 of item #3
+    var cart = {};
+
+    // "cachedItems" stores the menu items fetched from the server.
+    // We cache them so we can calculate totals without re-fetching.
+    var cachedItems = [];
+
+
+    // ── FUNCTION: Render the Order List ──
+    // Fetches all menu items and displays them with +/- controls.
     function render() {
       getMenuItems(function (items) {
-        cached = items || [];
-        var box = document.getElementById('orderList');
-        box.innerHTML = '';
-        cached.forEach(function (i) {
-          if (!(i.id in cart)) cart[i.id] = 0;
-          var sold = !i.isAvailable || i.qty <= 0;
-          var div = document.createElement('div');
-          div.className = 'item' + (sold ? ' off' : '');
-          div.innerHTML = '<div><div style="font-weight:bold;">' + i.name + '</div><div style="font-size:13px;color:#384d39;">' + (sold ? 'Sold Out' : '₹' + i.price) + '</div></div>' +
+        // Save items for later use in calculations
+        cachedItems = items || [];
+
+        // Get the list container
+        var listContainer = document.getElementById('orderList');
+        listContainer.innerHTML = '';      // clear existing content
+
+        // Loop through each item
+        cachedItems.forEach(function (item) {
+
+          // Initialize cart quantity for this item if not set yet
+          if (!(item.id in cart)) {
+            cart[item.id] = 0;
+          }
+
+          // Check if this item is sold out
+          var isSoldOut = !item.isAvailable || item.qty <= 0;
+
+          // Create the item card
+          var itemCard = document.createElement('div');
+          itemCard.className = 'item' + (isSoldOut ? ' off' : '');
+
+          // Build the card HTML
+          // Left side: item name and price (or "Sold Out")
+          // Right side: quantity controls (+/- buttons) or disabled button
+          itemCard.innerHTML =
+            // ── Left: Item Info ──
+            '<div>' +
+              '<div style="font-weight:bold;">' + item.name + '</div>' +
+              '<div style="font-size:13px;color:#384d39;">' +
+                (isSoldOut ? 'Sold Out' : '₹' + item.price) +
+              '</div>' +
+            '</div>' +
+
+            // ── Right: Quantity Controls ──
             '<div class="ctrl">' +
-            (sold ? '<button class="qbtn" disabled>+</button>' :
-              '<button class="qbtn" onclick="upd(' + i.id + ',-1)">-</button>' +
-              '<span style="font-weight:bold;min-width:16px;text-align:center;" id="q-' + i.id + '">' + cart[i.id] + '</span>' +
-              '<button class="qbtn" onclick="upd(' + i.id + ',1,' + i.qty + ')">+</button>') +
+              (isSoldOut
+                // If sold out → show a disabled + button
+                ? '<button class="qbtn" disabled>+</button>'
+
+                // If available → show - button, quantity display, + button
+                // onclick="updateQty(itemId, delta, maxStock)"
+                : '<button class="qbtn" onclick="updateQty(' + item.id + ',-1)">-</button>' +
+                  '<span style="font-weight:bold;min-width:16px;text-align:center;" id="q-' + item.id + '">' + cart[item.id] + '</span>' +
+                  '<button class="qbtn" onclick="updateQty(' + item.id + ',1,' + item.qty + ')">+</button>'
+              ) +
             '</div>';
-          box.appendChild(div);
+
+          listContainer.appendChild(itemCard);
         });
-        calc();
+
+        // Update the totals in the footer
+        calculateTotal();
       });
     }
 
-    function upd(id, delta, max) {
-      if (delta > 0 && cart[id] >= max) return alert('Stock limit reached');
+
+    // ── FUNCTION: Update Quantity ──
+    // Called when user clicks + or - button.
+    //
+    // Parameters:
+    //   id    = the item's ID number
+    //   delta = +1 (increase) or -1 (decrease)
+    //   max   = maximum allowed quantity (= available stock)
+    function updateQty(id, delta, max) {
+      // Don't exceed stock limit when adding
+      if (delta > 0 && cart[id] >= max) {
+        alert('Stock limit reached');
+        return;
+      }
+
+      // Update the cart quantity (minimum 0 — can't go negative)
+      // Math.max(0, ...) ensures quantity never goes below 0
       cart[id] = Math.max(0, (cart[id] || 0) + delta);
-      var el = document.getElementById('q-' + id);
-      if (el) el.textContent = cart[id];
-      calc();
+
+      // Update the displayed quantity number
+      var quantityDisplay = document.getElementById('q-' + id);
+      if (quantityDisplay) {
+        quantityDisplay.textContent = cart[id];
+      }
+
+      // Recalculate the total
+      calculateTotal();
     }
 
-    function calc() {
-      var c = 0, t = 0;
-      cached.forEach(function (i) { var q = cart[i.id] || 0; c += q; t += q * i.price; });
-      document.getElementById('cnt').textContent = c + ' Items';
-      document.getElementById('tot').textContent = 'Total: ₹' + t;
-      return t;
+
+    // ── FUNCTION: Calculate & Display Totals ──
+    // Loops through all items, calculates total count and total price.
+    function calculateTotal() {
+      var totalItems = 0;    // how many items in total
+      var totalPrice = 0;    // total price in rupees
+
+      // Loop through all cached items
+      cachedItems.forEach(function (item) {
+        var quantity = cart[item.id] || 0;           // how many of this item
+        totalItems += quantity;                       // add to total count
+        totalPrice += quantity * item.price;           // add to total price
+      });
+
+      // Update the footer display
+      document.getElementById('cnt').textContent = totalItems + ' Items';
+      document.getElementById('tot').textContent = 'Total: ₹' + totalPrice;
+
+      // Return the total price (used by placeOrder)
+      return totalPrice;
     }
 
-    function place() {
-      var total = calc(), items = [];
-      cached.forEach(function (i) { if (cart[i.id] > 0) items.push({ name: i.name, qty: cart[i.id], price: i.price }); });
-      if (!items.length) return alert('Select at least 1 item');
-      recordSale({ type: 'Open Order', table: null, total: total, items: items }, function () {
+
+    // ── FUNCTION: Place the Order ──
+    // Called when the user clicks "Place Order".
+    // Sends the order to api.php which saves it to the database.
+    function placeOrder() {
+      // Calculate the total price
+      var total = calculateTotal();
+
+      // Build an array of ordered items (only items with quantity > 0)
+      var orderedItems = [];
+      cachedItems.forEach(function (item) {
+        if (cart[item.id] > 0) {
+          orderedItems.push({
+            name:  item.name,
+            qty:   cart[item.id],
+            price: item.price
+          });
+        }
+      });
+
+      // Validate: at least one item must be selected
+      if (orderedItems.length === 0) {
+        alert('Select at least 1 item');
+        return;
+      }
+
+      // Send the order to the server via recordSale() from store.js
+      recordSale({
+        type:  'Open Order',         // order type
+        table: null,                 // no table number (it's an open order)
+        total: total,                // total price
+        items: orderedItems          // array of ordered items
+      }, function () {
+        // Success! Show confirmation and go back to home page
         alert('Order Placed!');
         location.href = 'home.html';
       });
     }
 
+
+    // ── INITIAL RENDER ──
+    // Load and display items when the page opens
     render();
   </script>
 </body>

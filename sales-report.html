@@ -1,19 +1,40 @@
 <!DOCTYPE html>
+<!-- ╔═══════════════════════════════════════════════════════════════╗
+     ║          sales-report.html — Admin Sales Report             ║
+     ║                                                              ║
+     ║  PURPOSE: Shows sales history for admins with filters.       ║
+     ║                                                              ║
+     ║  FEATURES:                                                   ║
+     ║    - Revenue & Order Count summary boxes                    ║
+     ║    - Period filters: Daily, Weekly, Monthly, Yearly, All    ║
+     ║    - Navigate between dates (← →)                          ║
+     ║    - Order type filters: All, Tables, Open Orders           ║
+     ║    - Scrollable list of individual orders                   ║
+     ║                                                              ║
+     ║  DATA SOURCE: store.js → api.php?action=sales               ║
+     ╚═══════════════════════════════════════════════════════════════╝ -->
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sales Report</title>
+
+  <!-- Global styles -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Page-specific styles -->
   <style>
+    /* ── Summary Grid (Revenue + Orders boxes) ──
+       Two boxes side by side at the top of the page */
     .grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr;    /* two equal-width columns */
       gap: 10px;
       margin-bottom: 12px;
     }
 
+    /* ── Summary Box ── */
     .box {
       background: var(--item-bg);
       border: 1px solid #0e630e;
@@ -21,18 +42,21 @@
       padding: 12px;
     }
 
+    /* Label text inside box (e.g., "REVENUE") */
     .box .lbl {
       font-size: 11px;
       font-weight: bold;
       color: #384d39;
-      text-transform: uppercase;
+      text-transform: uppercase;     /* makes text ALL CAPS */
     }
 
+    /* Value text inside box (e.g., "₹1,200") */
     .box .val {
       font-size: 20px;
       font-weight: 800;
     }
 
+    /* ── Filter Chip Bar ── */
     .bar {
       display: flex;
       gap: 6px;
@@ -40,6 +64,7 @@
       overflow-x: auto;
     }
 
+    /* ── Filter Chip Button ── */
     .chip {
       background: #d9e3d9;
       border: none;
@@ -51,11 +76,13 @@
       white-space: nowrap;
     }
 
+    /* Active chip — green background */
     .chip.active {
       background: var(--primary-pill);
       color: #fff;
     }
 
+    /* ── Date Navigation Bar (◀ Today ▶) ── */
     .nav {
       display: flex;
       align-items: center;
@@ -65,6 +92,7 @@
       font-weight: bold;
     }
 
+    /* Navigation arrow buttons */
     .nav button {
       background: none;
       border: none;
@@ -73,6 +101,7 @@
       padding: 2px 8px;
     }
 
+    /* ── Scrollable Sales List ── */
     .list {
       display: flex;
       flex-direction: column;
@@ -81,6 +110,7 @@
       overflow-y: auto;
     }
 
+    /* ── Individual Order Card ── */
     .card-item {
       background: var(--item-bg);
       border: 1px solid #0e630e;
@@ -91,6 +121,7 @@
       gap: 4px;
     }
 
+    /* Row inside order card (order code + type, date + total) */
     .row {
       display: flex;
       justify-content: space-between;
@@ -101,7 +132,12 @@
 </head>
 
 <body>
+  <!-- ═══════════════════════════════════════════════════════════
+       THE MAIN CARD — Full-screen sales report
+       ═══════════════════════════════════════════════════════════ -->
   <div class="card card-full">
+
+    <!-- Header with back button -->
     <div class="header">
       <button class="back-btn" onclick="location.href='admin-home.html'">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -112,6 +148,7 @@
       <p id="pLabel">Overview</p>
     </div>
 
+    <!-- ── SUMMARY BOXES: Revenue & Order Count ── -->
     <div class="grid">
       <div class="box">
         <div class="lbl">Revenue</div>
@@ -123,98 +160,292 @@
       </div>
     </div>
 
+    <!-- ── PERIOD FILTER (Daily / Weekly / Monthly / Yearly / All Time) ── -->
     <div class="bar" id="pBar">
-      <button class="chip active" onclick="setP('daily',this)">Daily</button>
-      <button class="chip" onclick="setP('weekly',this)">Weekly</button>
-      <button class="chip" onclick="setP('monthly',this)">Monthly</button>
-      <button class="chip" onclick="setP('yearly',this)">Yearly</button>
-      <button class="chip" onclick="setP('all',this)">All Time</button>
+      <button class="chip active" onclick="setPeriod('daily',this)">Daily</button>
+      <button class="chip" onclick="setPeriod('weekly',this)">Weekly</button>
+      <button class="chip" onclick="setPeriod('monthly',this)">Monthly</button>
+      <button class="chip" onclick="setPeriod('yearly',this)">Yearly</button>
+      <button class="chip" onclick="setPeriod('all',this)">All Time</button>
     </div>
 
+    <!-- ── DATE NAVIGATOR (◀ / Today / ▶) ──
+         Lets the admin go to previous or next day/week/month/year.
+         Hidden when "All Time" is selected. -->
     <div class="nav" id="dNav">
-      <button onclick="shift(-1)">◀</button>
+      <button onclick="shiftDate(-1)">◀</button>
       <span id="dLbl">Today</span>
-      <button onclick="shift(1)">▶</button>
+      <button onclick="shiftDate(1)">▶</button>
     </div>
 
+    <!-- ── ORDER TYPE FILTER (All / Tables / Open Orders) ── -->
     <div class="bar">
-      <button class="chip active" onclick="setT('all',this)">All</button>
-      <button class="chip" onclick="setT('tables',this)">Tables</button>
-      <button class="chip" onclick="setT('open',this)">Open Orders</button>
+      <button class="chip active" onclick="setType('all',this)">All</button>
+      <button class="chip" onclick="setType('tables',this)">Tables</button>
+      <button class="chip" onclick="setType('open',this)">Open Orders</button>
     </div>
 
+    <!-- ── SALES LIST ──
+         Dynamically filled with order cards by JavaScript -->
     <div class="list" id="salesList"></div>
   </div>
 
+
+  <!-- ═══════════════════════════════════════════════════════════
+       JAVASCRIPT — Sales Report Logic
+       ═══════════════════════════════════════════════════════════ -->
+
+  <!-- Load API helper functions -->
   <script src="store.js"></script>
+
   <script>
-    var allSales = [], period = 'daily', type = 'all', offset = 0;
+    // ── STATE VARIABLES ──
+    var allSales = [];           // all orders fetched from the server
+    var period   = 'daily';      // current period filter: 'daily', 'weekly', 'monthly', 'yearly', 'all'
+    var type     = 'all';        // current type filter: 'all', 'tables', 'open'
+    var offset   = 0;            // date offset: 0 = today, -1 = yesterday, -2 = day before, etc.
 
+
+    // ── FUNCTION: Calculate Date Range for Current Period ──
+    // Returns an object with:
+    //   s = start date (inclusive)
+    //   e = end date (exclusive)
+    //   l = label text (e.g., "Today", "Aug 2025", "2024")
+    //
+    // This function is the MOST COMPLEX part of the sales report.
+    // It calculates which orders to show based on the period and offset.
     function getRange() {
-      var n = new Date(), s, e, l;
+      var now = new Date();           // current date and time
+      var startDate, endDate, label;
+
       if (period === 'daily') {
-        s = new Date(n.getFullYear(), n.getMonth(), n.getDate() + offset);
-        e = new Date(s); e.setDate(e.getDate() + 1);
-        l = offset === 0 ? 'Today' : (offset === -1 ? 'Yesterday' : s.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }));
+        // ── DAILY VIEW ──
+        // Show orders for a single day.
+        // Start of day = midnight (00:00:00)
+        // End of day = midnight of the NEXT day
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
+        endDate   = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 1);    // add 1 day
+
+        // Generate the label
+        if (offset === 0) {
+          label = 'Today';
+        } else if (offset === -1) {
+          label = 'Yesterday';
+        } else {
+          // Format as "25 Aug"
+          label = startDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+        }
+
       } else if (period === 'weekly') {
-        var day = n.getDay() || 7;
-        s = new Date(n.getFullYear(), n.getMonth(), n.getDate() - day + 1 + (offset * 7));
-        e = new Date(s); e.setDate(e.getDate() + 7);
-        l = s.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) + ' – ' + new Date(e - 864e5).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+        // ── WEEKLY VIEW ──
+        // Show orders for a full week (Monday to Sunday).
+        var dayOfWeek = now.getDay() || 7;    // getDay() returns 0 for Sunday; || 7 converts it to 7
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 1 + (offset * 7));
+        endDate   = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 7);     // add 7 days
+
+        // Label: "25 Aug – 31 Aug"
+        var lastDay = new Date(endDate - 864e5);     // 864e5 = 86400000ms = 1 day (subtract to get last day of week)
+        label = startDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) +
+                ' – ' +
+                lastDay.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+
       } else if (period === 'monthly') {
-        s = new Date(n.getFullYear(), n.getMonth() + offset, 1);
-        e = new Date(n.getFullYear(), n.getMonth() + offset + 1, 1);
-        l = s.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+        // ── MONTHLY VIEW ──
+        // Show orders for an entire month.
+        startDate = new Date(now.getFullYear(), now.getMonth() + offset, 1);        // 1st of month
+        endDate   = new Date(now.getFullYear(), now.getMonth() + offset + 1, 1);    // 1st of NEXT month
+
+        // Label: "August 2025"
+        label = startDate.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+
       } else if (period === 'yearly') {
-        s = new Date(n.getFullYear() + offset, 0, 1);
-        e = new Date(n.getFullYear() + offset + 1, 0, 1);
-        l = s.getFullYear().toString();
+        // ── YEARLY VIEW ──
+        // Show orders for an entire year.
+        startDate = new Date(now.getFullYear() + offset, 0, 1);        // Jan 1 of the year
+        endDate   = new Date(now.getFullYear() + offset + 1, 0, 1);    // Jan 1 of NEXT year
+
+        // Label: "2025"
+        label = startDate.getFullYear().toString();
+
       } else {
-        s = new Date(0); e = new Date(9e11); l = 'All Time';
+        // ── ALL TIME VIEW ──
+        // Show ALL orders ever (no date filtering).
+        startDate = new Date(0);             // very old date (Jan 1, 1970)
+        endDate   = new Date(9e11);          // very far future date
+        label     = 'All Time';
       }
-      return { s: s, e: e, l: l };
+
+      return { s: startDate, e: endDate, l: label };
     }
 
+
+    // ── FUNCTION: Render the Sales Report ──
+    // Filters orders by date and type, calculates totals, and displays results.
     function render() {
-      var r = getRange();
-      document.getElementById('dLbl').textContent = r.l;
-      document.getElementById('dNav').style.display = period === 'all' ? 'none' : 'flex';
-      document.getElementById('pLabel').textContent = r.l + ' overview';
+      // Get the date range for the current period
+      var range = getRange();
 
-      var list = allSales.filter(function (o) {
-        var d = new Date(o.date);
-        return d >= r.s && d < r.e;
+      // Update the date label (e.g., "Today", "August 2025")
+      document.getElementById('dLbl').textContent = range.l;
+
+      // Hide the date navigator when viewing "All Time"
+      document.getElementById('dNav').style.display = (period === 'all') ? 'none' : 'flex';
+
+      // Update the subtitle in the header
+      document.getElementById('pLabel').textContent = range.l + ' overview';
+
+      // ── FILTER BY DATE ──
+      // Keep only orders that fall within the selected date range
+      var filteredOrders = allSales.filter(function (order) {
+        var orderDate = new Date(order.date);
+        return orderDate >= range.s && orderDate < range.e;
       });
 
-      if (type === 'tables') list = list.filter(function (o) { return o.table; });
-      if (type === 'open') list = list.filter(function (o) { return !o.table; });
+      // ── FILTER BY ORDER TYPE ──
+      if (type === 'tables') {
+        // Only table orders (table number exists and is not 0/null)
+        filteredOrders = filteredOrders.filter(function (order) {
+          return order.table;    // truthy = has a table number
+        });
+      }
+      if (type === 'open') {
+        // Only open orders (no table number)
+        filteredOrders = filteredOrders.filter(function (order) {
+          return !order.table;   // falsy = no table number
+        });
+      }
 
-      var rev = 0;
-      list.forEach(function (o) { rev += parseInt(o.total) || 0; });
-      document.getElementById('rev').textContent = '₹' + rev;
-      document.getElementById('cnt').textContent = list.length;
+      // ── CALCULATE REVENUE ──
+      var totalRevenue = 0;
+      filteredOrders.forEach(function (order) {
+        totalRevenue += parseInt(order.total) || 0;
+      });
 
+      // Update the summary boxes
+      document.getElementById('rev').textContent = '₹' + totalRevenue;
+      document.getElementById('cnt').textContent = filteredOrders.length;
+
+      // ── RENDER ORDER CARDS ──
       var container = document.getElementById('salesList');
-      container.innerHTML = list.length ? '' : '<div style="text-align:center;padding:20px;color:var(--text-muted);">No orders found</div>';
 
-      list.forEach(function (o) {
-        var items = o.items.map(function (i) { return i.name + ' x' + i.qty; }).join(', ');
-        var el = document.createElement('div');
-        el.className = 'card-item';
-        el.innerHTML =
-          '<div class="row"><span>' + o.order_code + '</span><span>' + o.type + '</span></div>' +
-          '<div style="font-size:12px;color:var(--text-muted);">' + items + '</div>' +
-          '<div class="row" style="margin-top:4px;"><span>' + (new Date(o.date)).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + '</span><span>₹' + o.total + '</span></div>';
-        container.appendChild(el);
+      // If no orders found, show a "No orders found" message
+      if (filteredOrders.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);">No orders found</div>';
+      } else {
+        container.innerHTML = '';    // clear existing content
+      }
+
+      // Loop through each order and create a card
+      filteredOrders.forEach(function (order) {
+        // Build a comma-separated string of items
+        // Example: "Masala Tea x2, Samosa x1"
+        var itemsList = order.items.map(function (item) {
+          return item.name + ' x' + item.qty;
+        }).join(', ');
+
+        // Create the order card element
+        var card = document.createElement('div');
+        card.className = 'card-item';
+
+        // Card HTML:
+        // Row 1: Order code (left) + Order type (right)
+        // Row 2: Items list
+        // Row 3: Date & time (left) + Total price (right)
+        card.innerHTML =
+          // ── Row 1: Order Code & Type ──
+          '<div class="row">' +
+            '<span>' + order.order_code + '</span>' +
+            '<span>' + order.type + '</span>' +
+          '</div>' +
+
+          // ── Row 2: Items List ──
+          '<div style="font-size:12px;color:var(--text-muted);">' + itemsList + '</div>' +
+
+          // ── Row 3: Date & Total ──
+          '<div class="row" style="margin-top:4px;">' +
+            '<span>' +
+              // Format the date as "25 Aug, 02:30 PM"
+              (new Date(order.date)).toLocaleString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit'
+              }) +
+            '</span>' +
+            '<span>₹' + order.total + '</span>' +
+          '</div>';
+
+        container.appendChild(card);
       });
     }
 
-    function setP(p, el) { period = p; offset = 0; act(el, '#pBar'); render(); }
-    function setT(t, el) { type = t; act(el, el.parentElement); render(); }
-    function act(el, parent) { (typeof parent === 'string' ? document.querySelector(parent) : parent).querySelectorAll('.chip').forEach(function (c) { c.classList.remove('active'); }); el.classList.add('active'); }
-    function shift(d) { if (period !== 'all' && (offset + d) <= 0) { offset += d; render(); } }
 
-    getSalesHistory(function (sales) { allSales = sales || []; render(); });
+    // ── FUNCTION: Set Period Filter ──
+    // Called when user clicks Daily / Weekly / Monthly / Yearly / All
+    function setPeriod(newPeriod, clickedElement) {
+      period = newPeriod;
+      offset = 0;                                   // reset offset when changing period
+      setActiveChip(clickedElement, '#pBar');        // update active chip styling
+      render();                                      // re-render with new filter
+    }
+
+
+    // ── FUNCTION: Set Order Type Filter ──
+    // Called when user clicks All / Tables / Open Orders
+    function setType(newType, clickedElement) {
+      type = newType;
+      setActiveChip(clickedElement, clickedElement.parentElement);
+      render();
+    }
+
+
+    // ── FUNCTION: Update Active Chip Styling ──
+    // Removes 'active' class from all chips in a container,
+    // then adds it to the clicked chip.
+    //
+    // Parameters:
+    //   clickedElement = the chip button that was clicked
+    //   parent         = the parent container (string selector or element)
+    function setActiveChip(clickedElement, parent) {
+      // If parent is a string (like '#pBar'), find the element
+      var parentElement = (typeof parent === 'string')
+        ? document.querySelector(parent)
+        : parent;
+
+      // Remove 'active' from all chips in this container
+      parentElement.querySelectorAll('.chip').forEach(function (chip) {
+        chip.classList.remove('active');
+      });
+
+      // Add 'active' to the clicked chip
+      clickedElement.classList.add('active');
+    }
+
+
+    // ── FUNCTION: Shift Date ──
+    // Called when user clicks ◀ (previous) or ▶ (next) arrow.
+    //
+    // Parameter:
+    //   direction = -1 (go back) or +1 (go forward)
+    //
+    // Note: You can only go backwards (into the past), not into the future.
+    // (offset + direction) <= 0 ensures offset never becomes positive.
+    function shiftDate(direction) {
+      if (period !== 'all' && (offset + direction) <= 0) {
+        offset += direction;
+        render();
+      }
+    }
+
+
+    // ── INITIAL DATA LOAD ──
+    // Fetch all sales history from the server, then render the report.
+    getSalesHistory(function (sales) {
+      allSales = sales || [];
+      render();
+    });
   </script>
 </body>
 

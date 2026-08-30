@@ -1,23 +1,123 @@
 <!DOCTYPE html>
+<!-- ╔═══════════════════════════════════════════════════════════════╗
+     ║          staff.html — Staff Stock Management Panel          ║
+     ║                                                              ║
+     ║  PURPOSE: Admin page to manage menu items.                   ║
+     ║  Admins can:                                                 ║
+     ║    - Add new menu items (via modal popup)                    ║
+     ║    - Edit name, price, and quantity of existing items        ║
+     ║    - Toggle items between Available / Sold Out               ║
+     ║    - Save changes to the database                            ║
+     ║                                                              ║
+     ║  DATA SOURCE: store.js → api.php (save_item / menu actions) ║
+     ╚═══════════════════════════════════════════════════════════════╝ -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Staff Panel</title>
+
+  <!-- Global styles -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Page-specific styles -->
   <style>
-    .list { display: flex; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto; }
-    .card-edit { background: var(--item-bg); border: 1px solid #0e630e; border-radius: 16px; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
-    .row { display: flex; gap: 6px; align-items: center; }
-    .inp { padding: 6px 10px; border-radius: 8px; border: 1px solid #a8bca9; background: #fff; font-size: 13px; margin: 0; }
-    .btn-act { padding: 6px 10px; border-radius: 8px; border: none; font-size: 12px; font-weight: bold; cursor: pointer; }
-    .btn-save { background: var(--primary-pill); color: #fff; border: none; border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: bold; cursor: pointer; }
-    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: center; z-index: 10; }
-    .modal-box { background: var(--card-bg); padding: 20px; border-radius: 18px; width: 90%; max-width: 320px; display: flex; flex-direction: column; gap: 8px; }
+    /* ── Scrollable list of editable items ── */
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;                  /* take up remaining vertical space */
+      overflow-y: auto;         /* scroll if list is too long */
+    }
+
+    /* ── Editable Item Card ──
+       Each menu item gets this card with input fields */
+    .card-edit {
+      background: var(--item-bg);
+      border: 1px solid #0e630e;
+      border-radius: 16px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* ── Row Layout ──
+       Used to align elements side by side */
+    .row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    /* ── Small Input Fields ──
+       Used inside item cards for name, price, qty */
+    .inp {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid #a8bca9;
+      background: #fff;
+      font-size: 13px;
+      margin: 0;               /* override the global input margin */
+    }
+
+    /* ── Small Action Buttons (Available/Sold Out toggle) ── */
+    .btn-act {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* ── Save Button (green) ── */
+    .btn-save {
+      background: var(--primary-pill);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* ── Modal Overlay ──
+       The dark semi-transparent background behind the "Add Item" popup.
+       "position: fixed" + "inset: 0" makes it cover the entire screen. */
+    .modal {
+      position: fixed;
+      inset: 0;                /* shorthand for top:0, right:0, bottom:0, left:0 */
+      background: rgba(0,0,0,0.4);   /* dark overlay with 40% opacity */
+      display: none;           /* hidden by default */
+      justify-content: center;
+      align-items: center;
+      z-index: 10;             /* appear above everything else */
+    }
+
+    /* ── Modal Content Box ──
+       The white popup form inside the modal */
+    .modal-box {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 18px;
+      width: 90%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
   </style>
 </head>
 <body>
+  <!-- ═══════════════════════════════════════════════════════════
+       THE MAIN CARD — Full-screen stock management panel
+       ═══════════════════════════════════════════════════════════ -->
   <div class="card card-full">
+
+    <!-- Header with back button -->
     <div class="header">
       <button class="back-btn" onclick="location.href='admin-home.html'">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
@@ -26,22 +126,38 @@
       <p>Edit stock & price</p>
     </div>
 
+    <!-- Add New Item button — opens the modal popup -->
     <button class="btn-full" style="padding:10px;margin-bottom:10px;" onclick="openAdd()">+ Add New Item</button>
+
+    <!-- ── ITEM LIST ──
+         This div is EMPTY in HTML.
+         JavaScript fills it with editable item cards. -->
     <div class="list" id="staffList"></div>
   </div>
 
+
+  <!-- ═══════════════════════════════════════════════════════════
+       ADD ITEM MODAL POPUP
+       Hidden by default. Shown when admin clicks "+ Add New Item".
+       ═══════════════════════════════════════════════════════════ -->
   <div class="modal" id="addModal">
     <div class="modal-box">
       <h3 style="text-align:center;">Add Item</h3>
+
+      <!-- New item form fields -->
       <input type="text" id="newName" placeholder="Name">
       <input type="text" id="newDesc" placeholder="Description">
       <input type="number" id="newPrice" placeholder="Price">
       <input type="number" id="newQty" placeholder="Quantity">
+
+      <!-- Category dropdown -->
       <select id="newCat" style="padding:8px;border-radius:10px;border:none;background:#d9e3d9;font-weight:bold;">
         <option value="food">Food</option>
         <option value="beverage">Beverage</option>
         <option value="snacks">Snacks</option>
       </select>
+
+      <!-- Cancel and Save buttons -->
       <div class="row">
         <button class="btn-act" style="flex:1;background:#d9e3d9;" onclick="closeAdd()">Cancel</button>
         <button class="btn-save" style="flex:1;" onclick="addItem()">Save</button>
@@ -49,58 +165,176 @@
     </div>
   </div>
 
+
+  <!-- ═══════════════════════════════════════════════════════════
+       JAVASCRIPT — Stock Management Logic
+       ═══════════════════════════════════════════════════════════ -->
+
+  <!-- Load API helper functions -->
   <script src="store.js"></script>
+
   <script>
+    // ── VARIABLE: Store the current menu items ──
+    // This array holds all items fetched from the server.
+    // We need it so we can access item data when saving changes.
     var items = [];
 
+
+    // ── FUNCTION: Render the Item List ──
+    // Fetches all menu items and creates editable cards for each one.
     function render() {
-      getMenuItems(function(res) {
-        items = res || [];
-        var box = document.getElementById('staffList');
-        box.innerHTML = '';
-        items.forEach(function(item, idx) {
-          var on = item.isAvailable && item.qty > 0;
-          var div = document.createElement('div');
-          div.className = 'card-edit';
-          div.innerHTML =
-            '<div class="row"><input class="inp" style="flex:1;font-weight:bold;" value="' + item.name + '" id="n-' + idx + '"><input type="number" class="inp" style="width:65px;" value="' + item.price + '" id="p-' + idx + '"></div>' +
-            '<div class="row"><input type="number" class="inp" style="width:65px;" value="' + item.qty + '" id="q-' + idx + '">' +
-            '<button class="btn-act" style="flex:1;background:' + (on ? '#e8f5e9;color:#2e7d32' : '#ffebee;color:#c62828') + ';" onclick="toggle(' + idx + ')">' + (on ? 'Available' : 'Sold Out') + '</button>' +
-            '<button class="btn-save" onclick="save(' + idx + ')">Save</button></div>';
-          box.appendChild(div);
+      getMenuItems(function(fetchedItems) {
+        // Save the items for later use (in save/toggle functions)
+        items = fetchedItems || [];
+
+        // Get the list container
+        var listContainer = document.getElementById('staffList');
+
+        // Clear existing content
+        listContainer.innerHTML = '';
+
+        // Loop through each item and create an editable card
+        items.forEach(function(item, index) {
+
+          // Check if item is currently available
+          var isAvailable = item.isAvailable && item.qty > 0;
+
+          // Create a new card element
+          var card = document.createElement('div');
+          card.className = 'card-edit';
+
+          // Build the card's HTML:
+          // Row 1: Name input (wide) + Price input (narrow)
+          // Row 2: Quantity input + Available/Sold Out button + Save button
+          //
+          // Each input has a unique ID like "n-0", "p-0", "q-0" (where 0 is the index)
+          // This lets us read the values later in the save() function
+          card.innerHTML =
+            // ── Row 1: Name and Price ──
+            '<div class="row">' +
+              '<input class="inp" style="flex:1;font-weight:bold;" value="' + item.name + '" id="n-' + index + '">' +
+              '<input type="number" class="inp" style="width:65px;" value="' + item.price + '" id="p-' + index + '">' +
+            '</div>' +
+
+            // ── Row 2: Quantity, Toggle, Save ──
+            '<div class="row">' +
+              '<input type="number" class="inp" style="width:65px;" value="' + item.qty + '" id="q-' + index + '">' +
+
+              // Toggle button — green if available, red if sold out
+              '<button class="btn-act" style="flex:1;background:' +
+                (isAvailable ? '#e8f5e9;color:#2e7d32' : '#ffebee;color:#c62828') +
+                ';" onclick="toggle(' + index + ')">' +
+                (isAvailable ? 'Available' : 'Sold Out') +
+              '</button>' +
+
+              // Save button
+              '<button class="btn-save" onclick="save(' + index + ')">Save</button>' +
+            '</div>';
+
+          // Add the card to the list
+          listContainer.appendChild(card);
         });
       });
     }
 
-    function openAdd() { document.getElementById('addModal').style.display = 'flex'; }
-    function closeAdd() { document.getElementById('addModal').style.display = 'none'; }
 
+    // ── FUNCTION: Open the "Add Item" Modal ──
+    // Makes the modal popup visible
+    function openAdd() {
+      document.getElementById('addModal').style.display = 'flex';
+    }
+
+
+    // ── FUNCTION: Close the "Add Item" Modal ──
+    // Hides the modal popup
+    function closeAdd() {
+      document.getElementById('addModal').style.display = 'none';
+    }
+
+
+    // ── FUNCTION: Add a New Item ──
+    // Reads values from the modal form and saves them to the database.
     function addItem() {
-      var n = document.getElementById('newName').value.trim();
-      var p = parseInt(document.getElementById('newPrice').value) || 0;
-      var q = parseInt(document.getElementById('newQty').value) || 0;
-      if (!n || p <= 0) return alert('Enter valid name and price');
-      saveMenuItem({ name: n, desc: document.getElementById('newDesc').value.trim() || 'Canteen item', price: p, category: document.getElementById('newCat').value, qty: q, isAvailable: q > 0 ? 1 : 0 }, function() {
-        closeAdd(); render();
+      // Read form values
+      var name     = document.getElementById('newName').value.trim();
+      var price    = parseInt(document.getElementById('newPrice').value) || 0;
+      var quantity = parseInt(document.getElementById('newQty').value) || 0;
+
+      // Validate: name and price are required
+      if (!name || price <= 0) {
+        alert('Enter valid name and price');
+        return;
+      }
+
+      // Prepare the item data object
+      var newItem = {
+        name:        name,
+        desc:        document.getElementById('newDesc').value.trim() || 'Canteen item',
+        price:       price,
+        category:    document.getElementById('newCat').value,      // food / beverage / snacks
+        qty:         quantity,
+        isAvailable: quantity > 0 ? 1 : 0    // available if quantity > 0
+      };
+
+      // Save to database via store.js → api.php
+      saveMenuItem(newItem, function() {
+        closeAdd();     // close the modal
+        render();       // refresh the list to show the new item
       });
     }
 
-    function toggle(idx) {
-      var it = items[idx];
-      it.isAvailable = it.isAvailable ? 0 : 1;
-      if (!it.isAvailable) it.qty = 0; else if (!it.qty) it.qty = 10;
-      saveMenuItem(it, render);
+
+    // ── FUNCTION: Toggle Available / Sold Out ──
+    // Flips the availability status of an item.
+    //
+    // Parameter:
+    //   index = the position of the item in the items array
+    function toggle(index) {
+      var item = items[index];
+
+      // Flip the availability: 1 → 0, 0 → 1
+      item.isAvailable = item.isAvailable ? 0 : 1;
+
+      // If marking as unavailable → set quantity to 0
+      // If marking as available but qty is 0 → set qty to 10 (default)
+      if (!item.isAvailable) {
+        item.qty = 0;
+      } else if (!item.qty) {
+        item.qty = 10;
+      }
+
+      // Save the change to the database and refresh
+      saveMenuItem(item, render);
     }
 
-    function save(idx) {
-      var it = items[idx];
-      it.name = document.getElementById('n-' + idx).value.trim();
-      it.price = parseInt(document.getElementById('p-' + idx).value) || 0;
-      it.qty = parseInt(document.getElementById('q-' + idx).value) || 0;
-      it.isAvailable = it.qty > 0 ? 1 : 0;
-      saveMenuItem(it, function() { alert('Saved!'); render(); });
+
+    // ── FUNCTION: Save Changes to an Item ──
+    // Reads the current values from the input fields and saves them.
+    //
+    // Parameter:
+    //   index = the position of the item in the items array
+    function save(index) {
+      var item = items[index];
+
+      // Read updated values from the input fields
+      // The IDs are "n-0", "p-0", "q-0" (where 0 = index)
+      item.name  = document.getElementById('n-' + index).value.trim();
+      item.price = parseInt(document.getElementById('p-' + index).value) || 0;
+      item.qty   = parseInt(document.getElementById('q-' + index).value) || 0;
+
+      // Auto-update availability based on quantity
+      item.isAvailable = item.qty > 0 ? 1 : 0;
+
+      // Save to database and show confirmation
+      saveMenuItem(item, function() {
+        alert('Saved!');
+        render();    // refresh the list
+      });
     }
 
+
+    // ── INITIAL RENDER ──
+    // Load and display items when the page first opens
     render();
   </script>
 </body>

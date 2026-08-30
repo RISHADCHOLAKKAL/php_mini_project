@@ -1,21 +1,44 @@
 <!DOCTYPE html>
+<!-- ╔═══════════════════════════════════════════════════════════════╗
+     ║             home.html — Student / Guest Home Page           ║
+     ║                                                              ║
+     ║  PURPOSE: The main landing page after a student logs in      ║
+     ║  or a guest enters. Shows two options:                       ║
+     ║    1. "Available Items" → view the menu (menu.html)         ║
+     ║    2. "Open Order" → place an order (open-order.html)       ║
+     ╚═══════════════════════════════════════════════════════════════╝ -->
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Online Kanjipura | Home</title>
+
+  <!-- Link to global stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+  <!-- ═══════════════════════════════════════════════════════════
+       THE MAIN CARD — Two big buttons for navigation
+       ═══════════════════════════════════════════════════════════ -->
   <div class="card">
+
+    <!-- Page header -->
     <div class="header">
       <h2>Welcome To Online Kanjipura</h2>
       <p>Select an option to begin</p>
     </div>
+
+    <!-- Button 1: View Available Items
+         onclick="location.href='...'" → navigates to another page when clicked -->
     <button class="btn-full" onclick="location.href='menu.html'">Available Items</button>
+
+    <!-- Button 2: Open an Order
+         "secondary" class gives it a lighter green color -->
     <button class="btn-full secondary" onclick="location.href='open-order.html'">Open Order</button>
+
+    <!-- Sign Out / Back link — takes user back to login page -->
     <a href="index.html"
       style="display:inline-block;margin-top:12px;font-size:13px;color:var(--text-muted);font-weight:bold;">Sign Out /
       Back</a>

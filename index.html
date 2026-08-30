@@ -1,38 +1,69 @@
 <!DOCTYPE html>
+<!-- ╔═══════════════════════════════════════════════════════════════╗
+     ║         index.html — Sign Up / Guest / Admin Login          ║
+     ║                                                              ║
+     ║  PURPOSE: This is the FIRST page users see.                  ║
+     ║  It has three modes (selected by the role buttons):          ║
+     ║                                                              ║
+     ║    Guest   → Enter a name and browse the menu (no account)  ║
+     ║    Student → Create a new student account (sign up)         ║
+     ║    Admin   → Log in with admin credentials                   ║
+     ║                                                              ║
+     ║  NAVIGATION:                                                 ║
+     ║    Guest   → home.html                                       ║
+     ║    Student → home.html (after signup)                        ║
+     ║    Admin   → admin-home.html (after login)                   ║
+     ╚═══════════════════════════════════════════════════════════════╝ -->
 <html lang="en">
 
 <head>
+  <!-- Character encoding — UTF-8 supports all languages and symbols -->
   <meta charset="UTF-8">
+
+  <!-- Makes the page responsive on mobile phones and tablets -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- The title shown in the browser tab -->
   <title>Online Kanjipura</title>
+
+  <!-- Link to our global stylesheet (style.css) -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Page-specific styles that are only used on this page -->
   <style>
+    /* ── Role Selector Buttons Container ──
+       The gray pill-shaped bar containing Guest / Student / Admin buttons */
     .role-box {
-      display: flex;
-      background-color: #d9e3d9;
-      border-radius: 20px;
-      padding: 4px;
-      margin-bottom: 20px;
+      display: flex;               /* lay buttons in a horizontal row */
+      background-color: #d9e3d9;   /* light green background */
+      border-radius: 20px;         /* rounded corners */
+      padding: 4px;                /* small inner padding */
+      margin-bottom: 20px;         /* space below the role box */
     }
 
+    /* ── Individual Role Button ──
+       Each button inside the role-box */
     .role-btn {
-      flex: 1;
+      flex: 1;                     /* each button takes equal width */
       padding: 10px;
       border: none;
       border-radius: 16px;
-      background: transparent;
+      background: transparent;     /* no background by default */
       cursor: pointer;
       font-weight: bold;
       font-size: 14px;
-      color: var(--text-muted);
-      transition: 0.2s;
+      color: var(--text-muted);    /* gray text when not selected */
+      transition: 0.2s;            /* smooth color transition */
     }
 
+    /* ── Active (Selected) Role Button ──
+       The currently selected role button gets a green background */
     .role-btn.active {
-      background-color: var(--primary-pill);
-      color: var(--white);
+      background-color: var(--primary-pill);   /* green background */
+      color: var(--white);                     /* white text */
     }
 
+    /* ── Footer Text (link to sign-in page) ── */
     .footer {
       margin-top: 15px;
       font-size: 13px;
@@ -45,103 +76,297 @@
       text-decoration: underline;
     }
 
+    /* ── Message Box (success / error messages) ──
+       Hidden by default. Shown via JavaScript when needed. */
     #msg {
       padding: 10px;
       border-radius: 12px;
       font-size: 13px;
       font-weight: 600;
       margin-bottom: 12px;
-      display: none;
+      display: none;              /* hidden by default */
       text-align: center;
     }
   </style>
 </head>
 
 <body>
+  <!-- ═══════════════════════════════════════════════════════════
+       THE MAIN CARD — Contains the entire sign-up form
+       ═══════════════════════════════════════════════════════════ -->
   <div class="card">
+
+    <!-- Page Title -->
     <h2>Online Kanjipura</h2>
+
+    <!-- Subtitle — changes based on the selected role -->
     <p id="sub">Take the first step</p>
 
+    <!-- ── ROLE SELECTOR (Guest / Student / Admin buttons) ──
+         Clicking a button calls setRole() which shows/hides
+         the appropriate form fields below. -->
     <div class="role-box">
       <button class="role-btn" id="gBtn" onclick="setRole('guest')">Guest</button>
       <button class="role-btn active" id="sBtn" onclick="setRole('student')">Student</button>
       <button class="role-btn" id="aBtn" onclick="setRole('admin')">Admin</button>
     </div>
 
+    <!-- ── MESSAGE BOX ──
+         Shows success (green) or error (red) messages.
+         Hidden by default, shown via JavaScript. -->
     <div id="msg"></div>
 
-    <!-- Guest -->
-    <div id="gP" style="display:none"><input type="text" id="gName" placeholder="Enter your name"></div>
-    <!-- Student signup -->
+    <!-- ═══════════════════════════════════════════════════════
+         FORM PANELS — Only ONE is visible at a time
+         ═══════════════════════════════════════════════════════ -->
+
+    <!-- GUEST PANEL — Just a name input (no account needed) -->
+    <div id="gP" style="display:none">
+      <input type="text" id="gName" placeholder="Enter your name">
+    </div>
+
+    <!-- STUDENT PANEL — Full signup form (email, username, password) -->
+    <!-- This is visible by default because "student" role is active -->
     <div id="sP">
       <input type="email" id="sEmail" placeholder="E-mail">
       <input type="text" id="sUser" placeholder="Username">
       <input type="password" id="sPass" placeholder="Password">
       <input type="password" id="sPass2" placeholder="Confirm password">
     </div>
-    <!-- Admin login -->
+
+    <!-- ADMIN PANEL — Admin login form (username + password only) -->
     <div id="aP" style="display:none">
       <input type="text" id="aUser" placeholder="Admin Username">
       <input type="password" id="aPass" placeholder="Admin Password">
     </div>
 
+    <!-- ── SUBMIT BUTTON ──
+         The text changes based on the role:
+         Guest → "Enter Website", Student → "Sign up", Admin → "Admin Sign In" -->
     <button class="submit-btn" id="btn" onclick="submit()">Sign up</button>
+
+    <!-- ── FOOTER LINK ──
+         Link to the sign-in page for existing users.
+         Hidden when Guest or Admin role is selected. -->
     <div class="footer" id="ft">Already have an account? <a href="signin.html">Sign in</a></div>
   </div>
 
+
+  <!-- ═══════════════════════════════════════════════════════════
+       JAVASCRIPT — Page Logic
+       ═══════════════════════════════════════════════════════════ -->
   <script>
+    // ── VARIABLE: Current Role ──
+    // Tracks which role is currently selected: 'guest', 'student', or 'admin'
     var role = 'student';
-    function show(id) { document.getElementById(id).style.display = 'block'; }
-    function hide(id) { document.getElementById(id).style.display = 'none'; }
-    function showMsg(t, err) { var m = document.getElementById('msg'); m.textContent = t; m.style.display = 'block'; m.style.background = err ? '#ffebee' : '#e8f5e9'; m.style.color = err ? '#c62828' : '#2e7d32'; }
 
-    function setRole(r) {
-      role = r;
-      document.getElementById('gBtn').className = 'role-btn' + (r === 'guest' ? ' active' : '');
-      document.getElementById('sBtn').className = 'role-btn' + (r === 'student' ? ' active' : '');
-      document.getElementById('aBtn').className = 'role-btn' + (r === 'admin' ? ' active' : '');
-      hide('gP'); hide('sP'); hide('aP'); hide('msg');
-      if (r === 'guest') { show('gP'); hide('ft'); document.getElementById('btn').textContent = 'Enter Website'; document.getElementById('sub').textContent = 'Explore as Guest'; }
-      if (r === 'student') { show('sP'); show('ft'); document.getElementById('btn').textContent = 'Sign up'; document.getElementById('sub').textContent = 'Take the first step'; }
-      if (r === 'admin') { show('aP'); hide('ft'); document.getElementById('btn').textContent = 'Admin Sign In'; document.getElementById('sub').textContent = 'Admin Portal'; }
+
+    // ── HELPER: Show an Element ──
+    // Takes an element's ID and makes it visible
+    function show(id) {
+      document.getElementById(id).style.display = 'block';
     }
 
-    function post(data, cb) {
-      var x = new XMLHttpRequest();
-      x.open('POST', 'api.php', true);
-      x.setRequestHeader('Content-Type', 'application/json');
-      x.onload = function () { try { cb(JSON.parse(x.responseText)); } catch (e) { showMsg('Server error: ' + x.responseText.substring(0, 80), true); } };
-      x.onerror = function () { showMsg('Network error', true); };
-      x.send(JSON.stringify(data));
+
+    // ── HELPER: Hide an Element ──
+    // Takes an element's ID and hides it
+    function hide(id) {
+      document.getElementById(id).style.display = 'none';
     }
 
+
+    // ── HELPER: Show a Message ──
+    // Displays a success or error message in the #msg box
+    // Parameters:
+    //   text    = the message text to display
+    //   isError = true for red (error), false for green (success)
+    function showMsg(text, isError) {
+      var msgBox = document.getElementById('msg');
+      msgBox.textContent = text;                                         // set the message text
+      msgBox.style.display = 'block';                                    // make it visible
+      msgBox.style.background = isError ? '#ffebee' : '#e8f5e9';        // red or green background
+      msgBox.style.color = isError ? '#c62828' : '#2e7d32';             // red or green text
+    }
+
+
+    // ── FUNCTION: Switch Role ──
+    // Called when the user clicks Guest, Student, or Admin button.
+    // It:
+    //   1. Updates the active button styling
+    //   2. Shows the correct form panel
+    //   3. Changes the button text and subtitle
+    function setRole(newRole) {
+      // Save the new role
+      role = newRole;
+
+      // Update which button looks "active" (green background)
+      // If this role matches, add ' active' to the class name
+      document.getElementById('gBtn').className = 'role-btn' + (newRole === 'guest' ? ' active' : '');
+      document.getElementById('sBtn').className = 'role-btn' + (newRole === 'student' ? ' active' : '');
+      document.getElementById('aBtn').className = 'role-btn' + (newRole === 'admin' ? ' active' : '');
+
+      // Hide ALL form panels and the message box
+      hide('gP');     // hide guest panel
+      hide('sP');     // hide student panel
+      hide('aP');     // hide admin panel
+      hide('msg');    // hide any previous messages
+
+      // Show the correct panel and update button text
+      if (newRole === 'guest') {
+        show('gP');                                                              // show guest panel
+        hide('ft');                                                              // hide the "Already have an account?" footer
+        document.getElementById('btn').textContent = 'Enter Website';            // change button text
+        document.getElementById('sub').textContent = 'Explore as Guest';         // change subtitle
+      }
+
+      if (newRole === 'student') {
+        show('sP');                                                              // show student signup panel
+        show('ft');                                                              // show the "Already have an account?" footer
+        document.getElementById('btn').textContent = 'Sign up';
+        document.getElementById('sub').textContent = 'Take the first step';
+      }
+
+      if (newRole === 'admin') {
+        show('aP');                                                              // show admin login panel
+        hide('ft');                                                              // hide the footer (admins don't sign up)
+        document.getElementById('btn').textContent = 'Admin Sign In';
+        document.getElementById('sub').textContent = 'Admin Portal';
+      }
+    }
+
+
+    // ── FUNCTION: Send POST Request to API ──
+    // Sends data to api.php using XMLHttpRequest (like fetch but older/simpler).
+    //
+    // Parameters:
+    //   data     = a JavaScript object to send (e.g., { action: 'signup', ... })
+    //   callback = function to call when the server responds
+    //
+    // XMLHttpRequest (XHR) is the classic way to make AJAX requests.
+    // AJAX = sending/receiving data WITHOUT reloading the page.
+    function post(data, callback) {
+      var xhr = new XMLHttpRequest();                          // create a new HTTP request object
+
+      xhr.open('POST', 'api.php', true);                      // configure: POST method, to api.php, async = true
+      xhr.setRequestHeader('Content-Type', 'application/json'); // tell server we're sending JSON
+
+      // This function runs when the server responds
+      xhr.onload = function () {
+        try {
+          // Try to parse the server's response as JSON
+          var response = JSON.parse(xhr.responseText);
+          callback(response);                                    // call the callback with parsed data
+        } catch (error) {
+          // If parsing fails, show a raw error message
+          showMsg('Server error: ' + xhr.responseText.substring(0, 80), true);
+        }
+      };
+
+      // This function runs if the network request itself fails
+      xhr.onerror = function () {
+        showMsg('Network error', true);
+      };
+
+      // Convert the JavaScript object to a JSON string and send it
+      xhr.send(JSON.stringify(data));
+    }
+
+
+    // ── FUNCTION: Handle Form Submission ──
+    // Called when the user clicks the submit button.
+    // Does different things based on the current role.
     function submit() {
-      var btn = document.getElementById('btn');
-      hide('msg');
+      var btn = document.getElementById('btn');    // reference to the submit button
+      hide('msg');                                  // hide any previous messages
 
-      if (role === 'guest') { window.location.href = 'home.html'; return; }
+      // ── GUEST MODE ──
+      // Simply redirect to the home page (no server request needed)
+      if (role === 'guest') {
+        window.location.href = 'home.html';
+        return;    // stop here — don't run the rest of the function
+      }
 
+      // ── STUDENT MODE — Sign Up ──
       if (role === 'student') {
-        var p = document.getElementById('sPass').value, p2 = document.getElementById('sPass2').value;
-        if (p.length < 4) { showMsg('Password must be at least 4 characters', true); return; }
-        if (p !== p2) { showMsg('Passwords do not match', true); return; }
-        btn.disabled = true; btn.textContent = 'Creating account...';
-        post({ action: 'signup', email: document.getElementById('sEmail').value.trim(), username: document.getElementById('sUser').value.trim(), password: p, role: 'student' }, function (res) {
-          btn.disabled = false; btn.textContent = 'Sign up';
-          if (res.error) { showMsg(res.error, true); return; }
+        // Get the password values
+        var password = document.getElementById('sPass').value;
+        var confirmPassword = document.getElementById('sPass2').value;
+
+        // Validate: password must be at least 4 characters
+        if (password.length < 4) {
+          showMsg('Password must be at least 4 characters', true);
+          return;
+        }
+
+        // Validate: passwords must match
+        if (password !== confirmPassword) {
+          showMsg('Passwords do not match', true);
+          return;
+        }
+
+        // Disable the button and show loading text
+        btn.disabled = true;
+        btn.textContent = 'Creating account...';
+
+        // Send signup request to api.php
+        post({
+          action:   'signup',
+          email:    document.getElementById('sEmail').value.trim(),
+          username: document.getElementById('sUser').value.trim(),
+          password: password,
+          role:     'student'
+        }, function (response) {
+          // Re-enable the button
+          btn.disabled = false;
+          btn.textContent = 'Sign up';
+
+          // Check if the server returned an error
+          if (response.error) {
+            showMsg(response.error, true);
+            return;
+          }
+
+          // Success! Show message and redirect after 0.8 seconds
           showMsg('Account created!', false);
-          setTimeout(function () { window.location.href = 'home.html'; }, 800);
+          setTimeout(function () {
+            window.location.href = 'home.html';
+          }, 800);
         });
       }
 
+      // ── ADMIN MODE — Log In ──
       if (role === 'admin') {
-        btn.disabled = true; btn.textContent = 'Signing in...';
-        post({ action: 'login', username: document.getElementById('aUser').value.trim(), password: document.getElementById('aPass').value }, function (res) {
-          btn.disabled = false; btn.textContent = 'Admin Sign In';
-          if (res.error) { showMsg(res.error, true); return; }
-          if (res.role !== 'admin') { showMsg('This account is not an admin', true); return; }
+        // Disable the button and show loading text
+        btn.disabled = true;
+        btn.textContent = 'Signing in...';
+
+        // Send login request to api.php
+        post({
+          action:   'login',
+          username: document.getElementById('aUser').value.trim(),
+          password: document.getElementById('aPass').value
+        }, function (response) {
+          // Re-enable the button
+          btn.disabled = false;
+          btn.textContent = 'Admin Sign In';
+
+          // Check for errors
+          if (response.error) {
+            showMsg(response.error, true);
+            return;
+          }
+
+          // Make sure the account actually has the "admin" role
+          if (response.role !== 'admin') {
+            showMsg('This account is not an admin', true);
+            return;
+          }
+
+          // Success! Show welcome message and redirect to admin dashboard
           showMsg('Welcome, Admin!', false);
-          setTimeout(function () { window.location.href = 'admin-home.html'; }, 800);
+          setTimeout(function () {
+            window.location.href = 'admin-home.html';
+          }, 800);
         });
       }
     }

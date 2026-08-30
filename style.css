@@ -1,116 +1,213 @@
-/* Global Color Variables & Design Tokens */
+/* ╔═══════════════════════════════════════════════════════════════╗
+   ║              style.css — Global Styles                       ║
+   ║                                                              ║
+   ║  PURPOSE: This is the main stylesheet for the entire         ║
+   ║  e-canteen app. Every HTML page links to this file.          ║
+   ║                                                              ║
+   ║  It defines:                                                 ║
+   ║    1. Color variables (so colors are consistent everywhere)  ║
+   ║    2. Reset styles (remove default browser spacing)          ║
+   ║    3. Page layout (how the body & cards are positioned)      ║
+   ║    4. Card components (the white rounded boxes)              ║
+   ║    5. Header styles (titles & subtitles)                     ║
+   ║    6. Form inputs (text fields, password fields)             ║
+   ║    7. Buttons (primary, secondary, submit)                   ║
+   ║    8. Status badges (available / sold out indicators)        ║
+   ║    9. Quantity box (stock count display)                     ║
+   ╚═══════════════════════════════════════════════════════════════╝ */
+
+
+/* -----------------------------------------------------------
+   1. COLOR VARIABLES (Design Tokens)
+   -----------------------------------------------------------
+   We define colors as CSS variables so we can reuse them
+   everywhere. If you want to change the app's color theme,
+   just change these values — it updates the ENTIRE app!
+
+   Usage in CSS: background-color: var(--primary-pill);
+   ----------------------------------------------------------- */
 :root {
-  --bg: #cfdacf;
-  --card-bg: #f9faf8;
-  --primary-pill: #5b795d;
-  --pill-hover: #4e6950;
-  --accent-pill: #8fa791;
-  --item-bg: #bcd0be;
-  --item-hover: #a8bca9;
-  --text-dark: #1f2b1f;
-  --text-muted: #5e6b5e;
-  --white: #ffffff;
-  --shadow: rgba(31, 43, 31, 0.1);
-  --available: #2e7d32;
-  --unavailable: #c62828;
+  --bg: #cfdacf;                           /* page background color (light sage green) */
+  --card-bg: #f9faf8;                      /* card/container background (almost white) */
+  --primary-pill: #5b795d;                 /* main button color (forest green) */
+  --pill-hover: #4e6950;                   /* button color when mouse hovers over it */
+  --accent-pill: #8fa791;                  /* secondary button color (lighter green) */
+  --item-bg: #bcd0be;                      /* menu item card background */
+  --item-hover: #a8bca9;                   /* menu item hover background */
+  --text-dark: #1f2b1f;                    /* main text color (dark green-black) */
+  --text-muted: #5e6b5e;                   /* secondary/lighter text color */
+  --white: #ffffff;                        /* pure white */
+  --shadow: rgba(31, 43, 31, 0.1);        /* soft shadow for cards */
+  --available: #2e7d32;                    /* green color for "available" status */
+  --unavailable: #c62828;                  /* red color for "sold out" status */
 }
 
-/* Reset & Fonts */
+
+/* -----------------------------------------------------------
+   2. CSS RESET & FONT
+   -----------------------------------------------------------
+   Browsers add default margins and padding to elements.
+   This removes them so we start with a clean slate.
+   
+   box-sizing: border-box → padding is included INSIDE the
+   element's width, not added outside (easier to work with).
+   ----------------------------------------------------------- */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
+  font-family: Arial, sans-serif;    /* use Arial font everywhere */
 }
 
-/* Page Body Layout */
+
+/* -----------------------------------------------------------
+   3. PAGE BODY LAYOUT
+   -----------------------------------------------------------
+   Makes the entire page a centered flexbox container.
+   Everything inside <body> will be centered both
+   horizontally and vertically.
+   
+   radial-gradient creates a subtle circular gradient
+   from light center to darker edges.
+   ----------------------------------------------------------- */
 body {
   background: radial-gradient(circle at 50% 30%, #eef3ee 0%, #cfdacf 100%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  display: flex;                     /* enable flexbox layout */
+  justify-content: center;          /* center children horizontally */
+  align-items: center;              /* center children vertically */
+  min-height: 100vh;                /* at least full screen height (vh = viewport height) */
   margin: 0;
   padding: 16px;
   box-sizing: border-box;
 }
 
-/* Common Card Containers */
+
+/* -----------------------------------------------------------
+   4. CARD COMPONENT (Small Centered Card)
+   -----------------------------------------------------------
+   The main white rounded container used on most pages.
+   Examples: login form, signup form, home buttons.
+   
+   border-radius: 30px → makes corners very rounded.
+   box-shadow → adds a soft drop shadow below the card.
+   ----------------------------------------------------------- */
 .card {
   background-color: var(--card-bg);
   width: 100%;
-  max-width: 380px;
-  padding: 28px 22px;
-  border-radius: 30px;
-  box-shadow: 0 15px 35px var(--shadow);
+  max-width: 380px;                  /* never wider than 380px */
+  padding: 28px 22px;               /* 28px top/bottom, 22px left/right */
+  border-radius: 30px;              /* rounded corners */
+  box-shadow: 0 15px 35px var(--shadow);   /* soft shadow effect */
   box-sizing: border-box;
   text-align: center;
 }
 
-/* Card Fullscreen Mode */
+
+/* -----------------------------------------------------------
+   5. CARD FULLSCREEN MODE
+   -----------------------------------------------------------
+   Used on pages like menu.html, staff.html where the card
+   fills the entire screen instead of being a small box.
+   
+   Applied as: <div class="card card-full">
+   ----------------------------------------------------------- */
 .card-full {
-  max-width: 100%;
-  height: 100%;
+  max-width: 100%;                   /* allow full width */
+  height: 100%;                      /* fill the full height */
   padding: 24px 20px;
   display: flex;
-  flex-direction: column;
-  text-align: left;
+  flex-direction: column;            /* stack children top-to-bottom */
+  text-align: left;                  /* left-align text (not centered) */
 }
 
-/* Header Titles & Subtitles */
+
+/* -----------------------------------------------------------
+   6. HEADER (Title + Subtitle)
+   -----------------------------------------------------------
+   The section at the top of each page containing
+   the page title (h2) and a short description (p).
+   ----------------------------------------------------------- */
 .header {
   margin-bottom: 20px;
   text-align: center;
-  position: relative;
+  position: relative;                /* needed for the back button positioning */
 }
 
+/* Page title — bold and dark */
 .header h2 {
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 700;                 /* 700 = bold */
   color: var(--text-dark);
 }
 
+/* Subtitle — smaller and lighter */
 .header p {
   font-size: 13px;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
-/* Back Button */
+
+/* -----------------------------------------------------------
+   7. BACK BUTTON (← arrow in top-left of header)
+   -----------------------------------------------------------
+   A small circular button positioned in the top-left
+   corner of the header. Contains an SVG arrow icon.
+   
+   position: absolute → takes it out of normal flow
+   and positions it relative to the .header container.
+   ----------------------------------------------------------- */
 .back-btn {
   position: absolute;
-  left: 0;
+  left: 0;                          /* stick to left edge */
   top: 2px;
-  background: none;
+  background: none;                 /* transparent background */
   border: none;
-  cursor: pointer;
+  cursor: pointer;                  /* show hand cursor on hover */
   color: var(--text-dark);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 4px;
-  border-radius: 50%;
+  border-radius: 50%;               /* make it circular */
 }
 
-/* Common Form Inputs */
+
+/* -----------------------------------------------------------
+   8. FORM INPUTS (text fields, password fields, email fields)
+   -----------------------------------------------------------
+   All <input> elements get this styling automatically.
+   Rounded with a subtle green background.
+   ----------------------------------------------------------- */
 input {
-  width: 100%;
+  width: 100%;                       /* fill the full width */
   padding: 14px;
-  margin-bottom: 12px;
-  border: none;
-  background-color: #d9e3d9;
-  border-radius: 20px;
+  margin-bottom: 12px;              /* space below each input */
+  border: none;                     /* no border */
+  background-color: #d9e3d9;        /* light green background */
+  border-radius: 20px;              /* rounded corners */
   box-sizing: border-box;
-  outline: none;
+  outline: none;                    /* remove the blue focus outline */
   font-size: 14px;
 }
 
-/* Primary Submit / Full Width Pill Buttons */
+
+/* -----------------------------------------------------------
+   9. PRIMARY BUTTONS (Full-Width Pill Buttons)
+   -----------------------------------------------------------
+   Used for main action buttons like:
+   "Sign up", "Sign in", "Available Items", "Open Order"
+   
+   .btn-full   → used on home & admin pages
+   .submit-btn → used on login & signup forms
+   
+   Both look the same — green pill-shaped buttons.
+   ----------------------------------------------------------- */
 .btn-full, .submit-btn {
   width: 100%;
   padding: 16px;
   border: none;
-  border-radius: 22px;
+  border-radius: 22px;              /* pill shape */
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
@@ -119,29 +216,40 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 10px;                        /* space between icon and text */
   color: var(--white);
-  background-color: var(--primary-pill);
+  background-color: var(--primary-pill);    /* forest green */
   box-shadow: 0 4px 12px rgba(91, 121, 93, 0.25);
-  transition: all 0.25s ease;
+  transition: all 0.25s ease;       /* smooth animation on hover */
 }
 
+/* Secondary button variant — lighter green color */
 .btn-full.secondary {
   background-color: var(--accent-pill);
   box-shadow: 0 4px 12px rgba(143, 167, 145, 0.25);
 }
 
+/* HOVER EFFECT — button lifts up slightly when mouse is over it */
 .btn-full:hover, .submit-btn:hover {
-  transform: translateY(-2px);
+  transform: translateY(-2px);      /* move up 2 pixels */
   background-color: var(--pill-hover);
   box-shadow: 0 6px 18px rgba(91, 121, 93, 0.35);
 }
 
+/* CLICK EFFECT — button snaps back down when clicked */
 .btn-full:active, .submit-btn:active {
-  transform: translateY(0);
+  transform: translateY(0);         /* back to original position */
 }
 
-/* Status Badges */
+
+/* -----------------------------------------------------------
+   10. STATUS BADGES (Available / Sold Out indicators)
+   -----------------------------------------------------------
+   Small colored labels showing item availability.
+   
+   Usage: <span class="status-badge available">Available</span>
+          <span class="status-badge unavailable">Sold Out</span>
+   ----------------------------------------------------------- */
 .status-badge {
   font-size: 11px;
   font-weight: bold;
@@ -149,38 +257,51 @@ input {
   border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 4px;                          /* space between dot and text */
 }
 
+/* Green badge for available items */
 .status-badge.available {
-  background-color: #e8f5e9;
-  color: var(--available);
+  background-color: #e8f5e9;        /* light green background */
+  color: var(--available);           /* green text */
 }
 
+/* Red badge for unavailable (sold out) items */
 .status-badge.unavailable {
-  background-color: #ffebee;
-  color: var(--unavailable);
+  background-color: #ffebee;        /* light red background */
+  color: var(--unavailable);         /* red text */
 }
 
+/* Small colored dot inside the status badge */
 .status-dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: 50%;               /* makes it a circle */
 }
 
+/* Green dot for available */
 .status-badge.available .status-dot {
   background-color: var(--available);
 }
 
+/* Red dot for unavailable */
 .status-badge.unavailable .status-dot {
   background-color: var(--unavailable);
 }
 
-/* Quantity Curved Square Badge */
+
+/* -----------------------------------------------------------
+   11. QUANTITY BOX (Stock Count Display)
+   -----------------------------------------------------------
+   Shows the remaining stock for a menu item.
+   Example: "Qty: 15" or "Sold Out"
+   
+   When the item has 0 stock, the "zero" class turns it red.
+   ----------------------------------------------------------- */
 .qty-box {
   background-color: var(--card-bg);
   color: var(--text-dark);
-  border: 1px solid var(--primary-pill);
+  border: 1px solid var(--primary-pill);    /* green border */
   border-radius: 10px;
   padding: 6px 12px;
   font-size: 13px;
@@ -189,10 +310,11 @@ input {
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  white-space: nowrap;
-  flex-shrink: 0;
+  white-space: nowrap;               /* prevent text from wrapping */
+  flex-shrink: 0;                    /* don't let it shrink in a flexbox */
 }
 
+/* Red style when quantity is zero (sold out) */
 .qty-box.zero {
   border-color: var(--unavailable);
   color: var(--unavailable);
