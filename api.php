@@ -1,22 +1,22 @@
 <?php
 // ╔═══════════════════════════════════════════════════════════════╗
-// ║              api.php — The Backend API                       ║
-// ║                                                              ║
-// ║  PURPOSE: This is the MAIN backend file. It handles ALL      ║
-// ║  data operations for the e-canteen app.                      ║
-// ║                                                              ║
-// ║  HOW IT WORKS:                                               ║
-// ║  The frontend (HTML pages) send requests to this file        ║
-// ║  with an "action" parameter. Based on the action, this       ║
-// ║  file does different things:                                 ║
-// ║                                                              ║
-// ║  ACTIONS:                                                    ║
-// ║    "menu"        → Returns all menu items                    ║
-// ║    "sales"       → Returns all past orders                  ║
-// ║    "signup"      → Creates a new student account             ║
-// ║    "login"       → Checks username & password                ║
-// ║    "save_item"   → Adds or updates a menu item               ║
-// ║    "record_sale" → Records a new order & reduces stock       ║
+// ║              api.php — The Backend API                        ║
+// ║                                                               ║
+// ║  PURPOSE: This is the MAIN backend file. It handles ALL       ║
+// ║  data operations for the e-canteen app.                       ║
+// ║                                                               ║
+// ║  HOW IT WORKS:                                                ║
+// ║  The frontend (HTML pages) send requests to this file         ║
+// ║  with an "action" parameter. Based on the action, this        ║
+// ║  file does different things:                                  ║
+// ║                                                               ║
+// ║  ACTIONS:                                                     ║
+// ║    "menu"        → Returns all menu items                     ║
+// ║    "sales"       → Returns all past orders                    ║
+// ║    "signup"      → Creates a new student account              ║
+// ║    "login"       → Checks username & password                 ║
+// ║    "save_item"   → Adds or updates a menu item                ║
+// ║    "record_sale" → Records a new order & reduces stock        ║
 // ╚═══════════════════════════════════════════════════════════════╝
 
 
